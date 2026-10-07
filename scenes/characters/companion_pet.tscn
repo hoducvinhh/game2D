@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/companion_pet.gd" id="1_pet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/pet.png" id="2_tex"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_pet"]
+radius = 16.0
+
+[node name="CompanionPet" type="CharacterBody2D" groups=["allies"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_pet")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color.WHITE
+region_enabled = true
+region_rect = Rect2(44, 128, 128, 116)
+scale = Vector2(0.28, 0.28)
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_pet")
