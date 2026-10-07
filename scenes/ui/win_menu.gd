@@ -18,7 +18,8 @@ func _ready() -> void:
 		audio_player.play()
 
 func _on_replay_pressed() -> void:
-	get_tree().paused = false 
+	get_tree().paused = false
+	GameData.start_random_run()
 	get_tree().reload_current_scene() # Reset lại map chơi lại từ đầu
 
 func _on_home_pressed() -> void:

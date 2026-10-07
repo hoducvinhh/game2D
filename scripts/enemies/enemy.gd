@@ -19,11 +19,21 @@ var gold_coin_scene: PackedScene = preload("res://scenes/objects/gold_coin.tscn"
 @export_range(0.0, 1.0) var gold_drop_chance: float = 0.4
 @export var gold_drop_min: int = 5
 @export var gold_drop_max: int = 10
+@export var projectile_attack_enabled: bool = false
+@export var projectile_interval: float = 5.6
+@export_range(1, 8) var animation_frame_count: int = 1
+@export var animation_frame_step: float = 169.0
+@export var animation_fps: float = 6.0
 
 var player: Node2D = null
 var is_dead: bool = false
 var original_scale: Vector2 = Vector2.ONE
 var walk_anim_timer: float = 0.0
+var projectile_timer: float = 1.0
+var animation_timer: float = 0.0
+var animation_frame: int = 0
+var animation_base_rect: Rect2
+var enemy_projectile_scene: PackedScene = preload("res://scenes/enemies/enemy_bullet.tscn")
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
@@ -32,8 +42,33 @@ func _ready() -> void:
 	add_to_group("enemies")
 	health = max_health
 	player = get_tree().get_first_node_in_group("player")
+	projectile_timer = randf_range(0.8, projectile_interval)
 	if sprite:
 		original_scale = sprite.scale
+		animation_base_rect = sprite.region_rect
+
+func _process(delta: float) -> void:
+	if sprite and animation_frame_count > 1:
+		animation_timer += delta
+		if animation_timer >= 1.0 / animation_fps:
+			animation_timer = 0.0
+			animation_frame = (animation_frame + 1) % animation_frame_count
+			sprite.region_rect = Rect2(
+				animation_base_rect.position.x + animation_frame_step * animation_frame,
+				animation_base_rect.position.y,
+				animation_base_rect.size.x,
+				animation_base_rect.size.y
+			)
+
+	if not projectile_attack_enabled or is_dead or is_fearing or not is_instance_valid(player):
+		return
+	projectile_timer -= delta
+	if projectile_timer <= 0.0:
+		projectile_timer = projectile_interval
+		var bullet = enemy_projectile_scene.instantiate()
+		bullet.global_position = global_position
+		bullet.direction = (player.global_position - global_position).normalized()
+		get_tree().current_scene.add_child(bullet)
 
 # --- HÀM KÍCH HOẠT TRẠNG THÁI HOẢNG SỢ ---
 func apply_fear(duration: float, source_pos: Vector2) -> void:
@@ -145,10 +180,9 @@ func _spawn_damage_number(amount: int) -> void:
 
 func die() -> void:
 	GameData.record_enemy_kill()
-	# Báo tiến độ nhiệm vụ cho QuestTracker nếu có
-	var quest_mgr = get_tree().get_first_node_in_group("quest_manager")
-	if quest_mgr and quest_mgr.has_method("record_kill"):
-		quest_mgr.record_kill()
+	var run_progression = get_tree().get_first_node_in_group("run_progression")
+	if run_progression and run_progression.has_method("record_normal_enemy_kill"):
+		run_progression.record_normal_enemy_kill()
 
 	# Tích nộ cho TouchControls
 	var touch = get_tree().get_first_node_in_group("touch_controls")

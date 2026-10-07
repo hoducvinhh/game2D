@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bnr1sc1ddei5u"
-path="res://.godot/imported/nenmoi2.png-3eb48d92c1d7465ff882a2a1911a25ee.ctex"
+uid="uid://ddxkvk2jot2ex"
+path="res://.godot/imported/nenmoi2.jpg-10a2030839794a4e16f001bad8cd5983.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/nenmoi2.png"
-dest_files=["res://.godot/imported/nenmoi2.png-3eb48d92c1d7465ff882a2a1911a25ee.ctex"]
+source_file="res://assets/nenmoi2.jpg"
+dest_files=["res://.godot/imported/nenmoi2.jpg-10a2030839794a4e16f001bad8cd5983.ctex"]
 
 [params]
 

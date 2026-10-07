@@ -2,7 +2,6 @@ extends BaseEnemy
 class_name VoidBoss
 
 var bullet_scene: PackedScene = preload("res://scenes/enemies/enemy_bullet.tscn")
-var minion_scene: PackedScene = preload("res://scenes/enemies/enemy.tscn")
 
 var is_enraged: bool = false
 var skill_timer: float = 3.0
@@ -89,16 +88,23 @@ func _physics_process(delta: float) -> void:
 			skill_timer = 3.5
 			_telegraph_charge()
 		else:
-			skill_timer = 4.0
+			skill_timer = 6.0
 			_fire_spread_bullets()
-			_summon_minions()
 
 	if is_instance_valid(player) and not is_fearing:
-		var dir = (player.global_position - global_position).normalized()
-		velocity = dir * speed
+		var offset_to_player: Vector2 = player.global_position - global_position
+		var distance_to_player := offset_to_player.length()
+		var toward_player := offset_to_player.normalized()
+		if distance_to_player > 850.0:
+			velocity = toward_player * speed
+		elif distance_to_player < 620.0:
+			velocity = -toward_player * speed
+		else:
+			var orbit_direction := Vector2(-toward_player.y, toward_player.x)
+			velocity = (orbit_direction * 0.65 + toward_player * 0.1) * speed
 		move_and_slide()
-		if dir.x != 0 and sprite:
-			sprite.flip_h = dir.x < 0
+		if velocity.x != 0 and sprite:
+			sprite.flip_h = velocity.x < 0
 	else:
 		super._physics_process(delta)
 
@@ -114,22 +120,13 @@ func _fire_spread_bullets() -> void:
 	if not is_instance_valid(player) or not bullet_scene:
 		return
 	var base_dir = (player.global_position - global_position).normalized()
-	var angles = [-0.45, -0.22, 0.0, 0.22, 0.45]
+	var angles = [-0.28, 0.0, 0.28]
 	for a in angles:
 		var bullet = bullet_scene.instantiate()
 		bullet.global_position = global_position
 		bullet.direction = base_dir.rotated(a)
 		bullet.damage = 12
 		get_tree().current_scene.add_child(bullet)
-
-func _summon_minions() -> void:
-	if not minion_scene:
-		return
-	for i in range(2):
-		var minion = minion_scene.instantiate()
-		var offset = Vector2(randf_range(-60, 60), randf_range(-60, 60))
-		minion.global_position = global_position + offset
-		get_tree().current_scene.call_deferred("add_child", minion)
 
 func _telegraph_charge() -> void:
 	if not is_instance_valid(player):
@@ -165,3 +162,6 @@ func die() -> void:
 			get_tree().current_scene.call_deferred("add_child", chest)
 		
 	super.die()
+	var survival_manager = get_tree().current_scene.get_node_or_null("SurvivalManager")
+	if survival_manager and survival_manager.has_method("trigger_win"):
+		survival_manager.trigger_win()

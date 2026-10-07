@@ -4,6 +4,7 @@ extends Node2D
 @onready var level_up_menu: Control = $CanvasLayer/LevelUpMenu
 @onready var gold_label: Label = $CanvasLayer/GoldLabel
 var weapons_row: HBoxContainer
+var map_hazard: Node2D
 
 const WEAPON_HUD_ITEMS := [
 	{"id": "Sugarcane", "name": "Bã mía", "icon": "res://assets/sprites/weapons/sugarcane/sugarcane.png"},
@@ -15,7 +16,6 @@ const WEAPON_HUD_ITEMS := [
 
 func _ready() -> void:
 	_apply_selected_map()
-	_start_map_hazards()
 	_update_gold_label(GameData.gold)
 	GameData.gold_changed.connect(_update_gold_label)
 
@@ -35,13 +35,27 @@ func _create_quest_tracker() -> void:
 	var tracker = preload("res://scripts/ui/quest_tracker.gd").new()
 	tracker.position = Vector2(900, 75)
 	$CanvasLayer.add_child(tracker)
+	$Node2D/EnemySpawner.call("bind_quest_tracker", tracker)
 
 func _start_map_hazards() -> void:
-	var map_data: Dictionary = GameData.MAPS.get(GameData.selected_map_id, GameData.MAPS["map_1"])
+	if is_instance_valid(map_hazard):
+		map_hazard.queue_free()
+	var map_id: String = GameData.current_run_map_id if not GameData.current_run_map_id.is_empty() else GameData.selected_map_id
+	var map_data: Dictionary = GameData.MAPS.get(map_id, GameData.MAPS["map_1"])
 	var hazard := preload("res://scripts/levels/map_hazards.gd").new()
+	hazard.name = "MapHazards"
 	hazard.hazard_type = map_data.get("hazard", "none")
 	hazard.player = player if is_instance_valid(player) else get_tree().get_first_node_in_group("player")
 	add_child(hazard)
+	map_hazard = hazard
+
+func apply_run_map(map_id: String) -> void:
+	if not GameData.MAPS.has(map_id):
+		push_error("Cannot apply unknown run map: %s" % map_id)
+		return
+	GameData.current_run_map_id = map_id
+	_apply_selected_map()
+	_start_map_hazards()
 
 
 func _create_weapons_hud() -> void:
@@ -122,7 +136,8 @@ func _update_gold_label(total_gold: int) -> void:
 	gold_label.text = "Vàng: %d" % total_gold
 
 func _apply_selected_map() -> void:
-	var map_data: Dictionary = GameData.MAPS.get(GameData.selected_map_id, GameData.MAPS["map_1"])
+	var map_id: String = GameData.current_run_map_id if not GameData.current_run_map_id.is_empty() else GameData.selected_map_id
+	var map_data: Dictionary = GameData.MAPS.get(map_id, GameData.MAPS["map_1"])
 	var background_path: String = map_data.get("background_path", "")
 	if background_path.is_empty() or not ResourceLoader.exists(background_path):
 		return

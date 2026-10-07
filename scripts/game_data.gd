@@ -15,18 +15,19 @@ const MAPS := {
 	"map_2": {
 		"name": "Rừng Ma Bí Ẩn",
 		"description": "Vùng sương làm chậm người chơi theo chu kỳ.",
-		"background_path": "res://assets/nenmoi1.png",
+		"background_path": "res://assets/nenmoi1.jpg",
 		"hazard": "slow",
 		"ranged_chance": 0.25
 	},
 	"map_3": {
 		"name": "Lãnh Địa Hư Không",
 		"description": "Tia sét được cảnh báo trước, gây sát thương trong vùng nhỏ.",
-		"background_path": "res://assets/nenmoi2.png",
+		"background_path": "res://assets/nenmoi2.jpg",
 		"hazard": "lightning",
 		"ranged_chance": 0.35
 	}
 }
+const RUN_ENEMY_TYPES: Array[String] = ["basic", "fast", "ranged"]
 const DIFFICULTIES := {
 	"easy": {
 		"name": "Dễ",
@@ -125,6 +126,9 @@ var gold: int = 0
 var unlocked_characters: Array[String] = ["default"]
 var selected_character_id: String = "default"
 var selected_map_id: String = "map_1"
+var run_map_order: Array[String] = []
+var run_enemy_type_by_map: Dictionary = {}
+var current_run_map_id: String = ""
 var selected_difficulty_id: String = "hard"
 var completed_runs: Array[Dictionary] = []
 var achievement_progress: Dictionary = {"kills": 0, "gold": 0, "completed_maps": [], "unlocked": []}
@@ -232,6 +236,18 @@ func select_map(map_id: String) -> bool:
 	selected_map_id = map_id
 	_save_profile()
 	return true
+
+func start_random_run() -> void:
+	run_map_order = ["map_1", "map_2", "map_3"]
+	run_map_order.shuffle()
+
+	var enemy_types := RUN_ENEMY_TYPES.duplicate()
+	enemy_types.shuffle()
+	run_enemy_type_by_map.clear()
+	for index in range(run_map_order.size()):
+		run_enemy_type_by_map[run_map_order[index]] = enemy_types[index]
+
+	current_run_map_id = run_map_order[0]
 
 func select_difficulty(difficulty_id: String) -> bool:
 	if not DIFFICULTIES.has(difficulty_id):

@@ -1,7 +1,7 @@
 extends Control
 
 const MAIN_MENU_PATH := "res://scenes/levels/main_menu.tscn"
-const MAP_LOBBY_PATH := "res://scenes/levels/map_lobby.tscn"
+const DIFFICULTY_LOBBY_PATH := "res://scenes/levels/difficulty_lobby.tscn"
 const FALLBACK_PORTRAIT_PATH := "res://assets/sprites/player/character_selection.png"
 const AVAILABLE_WEAPONS := [
 	{"name": "Bã mía", "icon": "res://assets/sprites/weapons/sugarcane/sugarcane.png", "description": "Phóng mía về phía kẻ địch gần nhất"},
@@ -247,4 +247,4 @@ func _on_start_pressed() -> void:
 		var current_id := character_ids[selected_index]
 		if GameData.is_character_unlocked(current_id):
 			GameData.select_character(current_id)
-	get_tree().change_scene_to_file(MAP_LOBBY_PATH)
+	get_tree().change_scene_to_file(DIFFICULTY_LOBBY_PATH)

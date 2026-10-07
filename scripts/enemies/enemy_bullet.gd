@@ -5,6 +5,7 @@ extends Area2D
 var direction: Vector2 = Vector2.RIGHT
 
 func _ready() -> void:
+	add_to_group("enemy_bullets")
 	collision_layer = 0
 	collision_mask = 1 # layer 1 is player
 	body_entered.connect(_on_body_entered)

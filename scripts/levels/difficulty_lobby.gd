@@ -1,6 +1,6 @@
 extends Control
 
-const MAP_LOBBY_PATH := "res://scenes/levels/map_lobby.tscn"
+const CHARACTER_LOBBY_PATH := "res://scenes/levels/character_lobby.tscn"
 const GAME_SCENE_PATH := "res://scenes/levels/main.tscn"
 const DIFFICULTY_IDS: Array[String] = ["easy", "hard", "super_hard"]
 
@@ -51,6 +51,7 @@ func _build_ui() -> void:
 	selected_map_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	selected_map_label.add_theme_font_size_override("font_size", 18)
 	selected_map_label.add_theme_color_override("font_color", Color(0.88, 0.87, 0.81))
+	selected_map_label.text = "Hành trình ngẫu nhiên qua cả 3 bản đồ"
 	content.add_child(selected_map_label)
 
 	var cards_row := HBoxContainer.new()
@@ -70,7 +71,7 @@ func _build_ui() -> void:
 	var footer := HBoxContainer.new()
 	content.add_child(footer)
 
-	var back_button := _make_button("Quay lại chọn map")
+	var back_button := _make_button("Quay lại chọn nhân vật")
 	back_button.pressed.connect(_on_back_pressed)
 	footer.add_child(back_button)
 
@@ -124,9 +125,6 @@ func _make_button(button_text: String) -> Button:
 	return button
 
 func _refresh_difficulties() -> void:
-	var map_data: Dictionary = GameData.MAPS.get(GameData.selected_map_id, GameData.MAPS["map_1"])
-	selected_map_label.text = "Bản đồ: %s" % map_data.get("name", "")
-
 	for difficulty_id in DIFFICULTY_IDS:
 		var is_selected := GameData.selected_difficulty_id == difficulty_id
 		var style := StyleBoxFlat.new()
@@ -152,7 +150,8 @@ func _on_select_difficulty_pressed(difficulty_id: String) -> void:
 	_refresh_difficulties()
 
 func _on_back_pressed() -> void:
-	get_tree().change_scene_to_file(MAP_LOBBY_PATH)
+	get_tree().change_scene_to_file(CHARACTER_LOBBY_PATH)
 
 func _on_start_pressed() -> void:
+	GameData.start_random_run()
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)

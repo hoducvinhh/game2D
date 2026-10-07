@@ -3,7 +3,7 @@ class_name RangedEnemy
 
 var bullet_scene: PackedScene = preload("res://scenes/enemies/enemy_bullet.tscn")
 var shoot_timer: float = 0.0
-@export var shoot_interval: float = 2.2
+@export var shoot_interval: float = 4.4
 
 func _ready() -> void:
 	speed = 85.0

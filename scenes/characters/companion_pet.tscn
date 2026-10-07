@@ -14,8 +14,8 @@ script = ExtResource("1_pet")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color.WHITE
 region_enabled = true
-region_rect = Rect2(44, 128, 128, 116)
-scale = Vector2(0.28, 0.28)
+region_rect = Rect2(35, 128, 128, 116)
+scale = Vector2(0.4, 0.4)
 texture = ExtResource("2_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
