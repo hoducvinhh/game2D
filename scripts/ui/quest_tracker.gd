@@ -2,7 +2,7 @@ extends PanelContainer
 class_name QuestTracker
 
 var kill_count: int = 0
-var kill_goal: int = 50
+var kill_goal: int = 10
 var gold_collected: int = 0
 var gold_goal: int = 30
 var boss_killed: bool = false
@@ -16,15 +16,21 @@ var banner_label: Label
 func _ready() -> void:
 	add_to_group("quest_manager")
 	
-	# Điều chỉnh độ khó nhiệm vụ
+	match GameData.selected_map_id:
+		"map_1":
+			kill_goal = 10
+		"map_2":
+			kill_goal = 15
+		"map_3":
+			kill_goal = 20
+		_:
+			kill_goal = 25
+
 	if GameData.selected_difficulty_id == "easy":
-		kill_goal = 30
 		gold_goal = 20
 	elif GameData.selected_difficulty_id == "super_hard":
-		kill_goal = 75
 		gold_goal = 45
 	elif GameData.selected_difficulty_id == "hard":
-		kill_goal = 50
 		gold_goal = 30
 
 	_setup_ui()

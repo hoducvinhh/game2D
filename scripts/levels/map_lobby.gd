@@ -29,22 +29,25 @@ func _build_ui() -> void:
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 40)
-	margin.add_theme_constant_override("margin_top", 28)
-	margin.add_theme_constant_override("margin_right", 40)
-	margin.add_theme_constant_override("margin_bottom", 28)
+	margin.add_theme_constant_override("margin_left", 24)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_right", 24)
+	margin.add_theme_constant_override("margin_bottom", 16)
 	add_child(margin)
 
 	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 20)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 12)
 	margin.add_child(content)
 
 	var header := HBoxContainer.new()
+	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_child(header)
 
 	var heading := Label.new()
 	heading.text = "CHỌN BẢN ĐỒ"
-	heading.add_theme_font_size_override("font_size", 30)
+	heading.add_theme_font_size_override("font_size", 26)
 	heading.add_theme_color_override("font_color", Color(1.0, 0.88, 0.56))
 	header.add_child(heading)
 
@@ -53,13 +56,14 @@ func _build_ui() -> void:
 	header.add_child(header_spacer)
 
 	selected_map_label = Label.new()
+	selected_map_label.size_flags_horizontal = Control.SIZE_SHRINK_END
 	selected_map_label.add_theme_font_size_override("font_size", 18)
 	selected_map_label.add_theme_color_override("font_color", Color(0.92, 0.9, 0.83))
 	header.add_child(selected_map_label)
 
 	var cards_row := HBoxContainer.new()
 	cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	cards_row.add_theme_constant_override("separation", 18)
+	cards_row.add_theme_constant_override("separation", 12)
 	content.add_child(cards_row)
 
 	for map_id in MAP_IDS:
@@ -77,23 +81,23 @@ func _build_ui() -> void:
 	footer.add_child(footer_spacer)
 
 	var start_button := _make_button("Chọn độ khó")
-	start_button.custom_minimum_size = Vector2(220, 52)
+	start_button.custom_minimum_size = Vector2(200, 46)
 	start_button.pressed.connect(_on_start_pressed)
 	footer.add_child(start_button)
 
 func _create_map_card(map_id: String) -> PanelContainer:
 	var map_data: Dictionary = GameData.MAPS[map_id]
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(300, 390)
+	card.custom_minimum_size = Vector2(220, 300)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	map_cards[map_id] = card
 
 	var details := VBoxContainer.new()
-	details.add_theme_constant_override("separation", 12)
+	details.add_theme_constant_override("separation", 8)
 	card.add_child(details)
 
 	var preview := TextureRect.new()
-	preview.custom_minimum_size = Vector2(280, 235)
+	preview.custom_minimum_size = Vector2(0, 180)
 	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
@@ -105,13 +109,16 @@ func _create_map_card(map_id: String) -> PanelContainer:
 	var title := Label.new()
 	title.text = map_data.get("name", map_id)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 22)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.add_theme_font_size_override("font_size", 20)
 	title.add_theme_color_override("font_color", Color(1.0, 0.96, 0.86))
 	details.add_child(title)
 
 	var description := Label.new()
 	description.text = map_data.get("description", "")
 	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	description.add_theme_color_override("font_color", Color(0.8, 0.79, 0.74))
 	details.add_child(description)
 
@@ -125,8 +132,8 @@ func _create_map_card(map_id: String) -> PanelContainer:
 func _make_button(button_text: String) -> Button:
 	var button := Button.new()
 	button.text = button_text
-	button.custom_minimum_size = Vector2(120, 44)
-	button.add_theme_font_size_override("font_size", 18)
+	button.custom_minimum_size = Vector2(110, 38)
+	button.add_theme_font_size_override("font_size", 16)
 	return button
 
 func _refresh_maps() -> void:
@@ -137,10 +144,10 @@ func _refresh_maps() -> void:
 		style.border_color = Color(1.0, 0.78, 0.24) if is_selected else Color(0.4, 0.4, 0.38)
 		style.set_border_width_all(3 if is_selected else 1)
 		style.set_corner_radius_all(8)
-		style.content_margin_left = 12
-		style.content_margin_top = 12
-		style.content_margin_right = 12
-		style.content_margin_bottom = 12
+		style.content_margin_left = 8
+		style.content_margin_top = 8
+		style.content_margin_right = 8
+		style.content_margin_bottom = 8
 		var card: PanelContainer = map_cards[map_id]
 		card.add_theme_stylebox_override("panel", style)
 		var select_button: Button = map_select_buttons[map_id]

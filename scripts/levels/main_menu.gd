@@ -11,6 +11,9 @@ var history_list: VBoxContainer
 
 func _ready() -> void:
 	# Kết nối tín hiệu sự kiện nút bấm
+	_set_button_click_mask(play_button)
+	_set_button_click_mask(settings_button)
+	_set_button_click_mask(quit_button)
 	play_button.pressed.connect(_on_play_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
@@ -26,6 +29,11 @@ func _ready() -> void:
 		var tween = create_tween()
 		tween.tween_property(progress_bar, "value", 100, 1.5)
 		tween.finished.connect(_on_loading_complete)
+
+func _set_button_click_mask(button: TextureButton) -> void:
+	var click_mask := BitMap.new()
+	click_mask.create_from_image_alpha(button.texture_normal.get_image())
+	button.texture_click_mask = click_mask
 
 func _create_story_button() -> void:
 	var story_button := Button.new()

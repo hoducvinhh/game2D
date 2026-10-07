@@ -35,7 +35,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var player := get_tree().get_first_node_in_group("player")
-	var cooldown_multiplier := player.get_attack_speed_multiplier() if player and player.has_method("get_attack_speed_multiplier") and not is_attacking else 1.0
+	var cooldown_multiplier: float = player.get_attack_speed_multiplier() if player and player.has_method("get_attack_speed_multiplier") and not is_attacking else 1.0
 	state_timer += delta * cooldown_multiplier
 	
 	if is_attacking:
