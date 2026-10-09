@@ -189,6 +189,5 @@ func _on_timer_timeout() -> void:
 		if not enemy:
 			push_error("Enemy scene for %s does not use BaseEnemy" % enemy_type)
 			return
-		enemy.projectile_attack_enabled = enemy_type != "ranged"
 		enemy.global_position = spawn_position
 		get_tree().current_scene.add_child(enemy)
