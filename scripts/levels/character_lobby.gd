@@ -3,18 +3,12 @@ extends Control
 const MAIN_MENU_PATH := "res://scenes/levels/main_menu.tscn"
 const DIFFICULTY_LOBBY_PATH := "res://scenes/levels/difficulty_lobby.tscn"
 const FALLBACK_PORTRAIT_PATH := "res://assets/sprites/player/character_selection.png"
-const AVAILABLE_WEAPONS := [
-	{"name": "Bã mía", "icon": "res://assets/sprites/weapons/sugarcane/sugarcane.png", "description": "Phóng mía về phía kẻ địch gần nhất"},
-	{"name": "Shisa", "icon": "res://assets/sprites/weapons/shisa/shisa.png", "description": "Phun làn khói liên tục diện rộng"},
-	{"name": "Cái chày", "icon": "res://assets/sprites/weapons/bat/bat.png", "description": "Vung chày đập mạnh xuống kẻ địch"},
-	{"name": "Khiên", "icon": "res://assets/sprites/weapons/shield/shield.png", "description": "Giảm sát thương nhận vào"},
-	{"name": "Điện thoại", "icon": "res://assets/sprites/weapons/phone/phone1.png", "description": "Vũ khí phòng thủ"}
-]
 
 var character_ids: Array[String] = []
 var selected_index: int = 0
 var preview: TextureRect
 var name_label: Label
+var biography_label: Label
 var status_label: Label
 var balance_label: Label
 var action_button: Button
@@ -115,11 +109,17 @@ func _build_ui() -> void:
 	name_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.86))
 	information.add_child(name_label)
 
+	biography_label = Label.new()
+	biography_label.add_theme_font_size_override("font_size", 16)
+	biography_label.add_theme_color_override("font_color", Color(0.86, 0.84, 0.78))
+	biography_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	biography_label.custom_minimum_size.y = 84
+	information.add_child(biography_label)
+
 	status_label = Label.new()
 	status_label.add_theme_font_size_override("font_size", 18)
 	status_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.24))
 	information.add_child(status_label)
-	_add_available_weapons(information)
 
 	var navigation := HBoxContainer.new()
 	navigation.add_theme_constant_override("separation", 12)
@@ -153,39 +153,6 @@ func _build_ui() -> void:
 	start_button.pressed.connect(_on_start_pressed)
 	footer.add_child(start_button)
 
-func _add_available_weapons(parent: VBoxContainer) -> void:
-	var heading := Label.new()
-	heading.text = "VŨ KHÍ CÓ SẴN"
-	heading.add_theme_font_size_override("font_size", 14)
-	heading.add_theme_color_override("font_color", Color(0.78, 0.74, 0.64))
-	parent.add_child(heading)
-
-	var weapon_row := HBoxContainer.new()
-	weapon_row.add_theme_constant_override("separation", 6)
-	parent.add_child(weapon_row)
-	for weapon in AVAILABLE_WEAPONS:
-		var weapon_item := VBoxContainer.new()
-		weapon_item.custom_minimum_size = Vector2(58, 68)
-		weapon_item.add_theme_constant_override("separation", 2)
-		weapon_row.add_child(weapon_item)
-
-		var icon := TextureRect.new()
-		icon.custom_minimum_size = Vector2(42, 42)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.texture = load(weapon["icon"])
-		icon.tooltip_text = "%s: %s" % [weapon["name"], weapon["description"]]
-		weapon_item.add_child(icon)
-
-		var weapon_name := Label.new()
-		weapon_name.text = weapon["name"]
-		weapon_name.custom_minimum_size.x = 58
-		weapon_name.add_theme_font_size_override("font_size", 11)
-		weapon_name.add_theme_color_override("font_color", Color(1.0, 0.96, 0.86))
-		weapon_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		weapon_name.clip_text = true
-		weapon_item.add_child(weapon_name)
-
 func _make_button(button_text: String) -> Button:
 	var button := Button.new()
 	button.text = button_text
@@ -200,6 +167,7 @@ func _refresh_character() -> void:
 	var character_id := character_ids[selected_index]
 	var character: Dictionary = GameData.CHARACTERS[character_id]
 	name_label.text = character.get("name", character_id)
+	biography_label.text = character.get("biography", character.get("description", ""))
 
 	var portrait_path: String = character.get("portrait_path", FALLBACK_PORTRAIT_PATH)
 	if not ResourceLoader.exists(portrait_path):

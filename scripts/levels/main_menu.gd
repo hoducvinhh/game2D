@@ -1,6 +1,7 @@
 extends Control
 
 @onready var progress_bar: ProgressBar = $%LoadingBar
+@onready var loading_status: Label = $%LoadingStatus
 @onready var play_button: TextureButton = $%PlayButton
 @onready var settings_button: TextureButton = $%SettingsButton
 @onready var quit_button: TextureButton = $%QuitButton
@@ -26,10 +27,38 @@ func _ready() -> void:
 	# Khóa nút Play và chạy thanh Loading giả lập khi khởi động
 	play_button.disabled = true
 	if progress_bar:
+		_style_loading_bar()
+		progress_bar.value_changed.connect(_on_loading_progress_changed)
 		progress_bar.value = 0
 		var tween = create_tween()
-		tween.tween_property(progress_bar, "value", 100, 1.5)
+		tween.tween_property(progress_bar, "value", 100.0, 1.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 		tween.finished.connect(_on_loading_complete)
+
+func _style_loading_bar() -> void:
+	progress_bar.show_percentage = false
+	progress_bar.custom_minimum_size = Vector2(260.0, 7.0)
+
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color(0.035, 0.045, 0.065, 0.94)
+	background.border_color = Color(0.52, 0.38, 0.19, 0.95)
+	background.set_border_width_all(1)
+	background.set_corner_radius_all(7)
+	background.content_margin_left = 2
+	background.content_margin_right = 2
+	background.content_margin_top = 2
+	background.content_margin_bottom = 2
+	progress_bar.add_theme_stylebox_override("background", background)
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(1.0, 0.69, 0.22, 1.0)
+	fill.border_color = Color(1.0, 0.88, 0.52, 1.0)
+	fill.set_border_width_all(1)
+	fill.set_corner_radius_all(6)
+	progress_bar.add_theme_stylebox_override("fill", fill)
+
+func _on_loading_progress_changed(value: float) -> void:
+	if loading_status:
+		loading_status.text = "ĐANG KHỞI TẠO · %d%%" % roundi(value)
 
 func _set_button_click_mask(button: TextureButton) -> void:
 	var click_mask := BitMap.new()
@@ -90,6 +119,8 @@ func _on_loading_complete() -> void:
 	play_button.disabled = false
 	if progress_bar:
 		progress_bar.hide() # Ẩn thanh loading sau khi tải xong
+	if loading_status:
+		loading_status.hide()
 
 func _on_play_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/levels/character_lobby.tscn")
