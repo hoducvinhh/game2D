@@ -90,7 +90,12 @@ const CHARACTERS := {
 		"portrait_path": "res://assets/sprites/player/sniper_portrait.png",
 		"fallback_portrait": "res://assets/sprites/player/character_selection.png",
 		"normal_path": "res://assets/sprites/player/sniper_normal.png",
-		"run_path": "res://assets/sprites/player/sniper_run.png",
+		"run_frames": [
+			"res://assets/sprites/player/sniper_run_frames/run_1.png",
+			"res://assets/sprites/player/sniper_run_frames/run_2.png",
+			"res://assets/sprites/player/sniper_run_frames/run_3.png",
+			"res://assets/sprites/player/sniper_run_frames/run_4.png"
+		],
 		"attack_path": "res://assets/sprites/player/sniper_attack.png",
 		"bonus_hp": 10,
 		"bonus_speed": 15.0

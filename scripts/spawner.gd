@@ -8,6 +8,12 @@ var pet_scene: PackedScene = load("res://scenes/characters/companion_pet.tscn")
 
 @onready var timer: Timer = $Timer
 
+var quest_tracker: Node
+var current_map_id: String = ""
+var current_enemy_type: String = "basic"
+var current_batch_size: int = 5
+var current_spawn_interval: float = 2.0
+
 @export var batch_size: int = 5
 @export var max_active_enemies: int = 85
 
@@ -16,7 +22,6 @@ enum RunPhase { MAP, TRANSITION, BOSS }
 var phase: RunPhase = RunPhase.MAP
 var map_index: int = 0
 var map_time_elapsed: float = 0.0
-var quest_tracker: Node
 var pet_spawn_pending: bool = false
 var awaiting_continue_confirmation: bool = false
 
@@ -27,13 +32,18 @@ func _ready() -> void:
 
 	timer.timeout.connect(_on_timer_timeout)
 	timer.stop()
+	_apply_difficulty_settings()
+	call_deferred("_spawn_companion_pet")
+
+func _apply_difficulty_settings() -> void:
 	var difficulty: Dictionary = GameData.DIFFICULTIES.get(
 		GameData.selected_difficulty_id,
 		GameData.DIFFICULTIES["hard"]
 	)
-	timer.wait_time = difficulty.get("spawn_interval", 2.0)
-	batch_size = difficulty.get("batch_size", 5)
-	call_deferred("_spawn_companion_pet")
+	current_spawn_interval = difficulty.get("spawn_interval", 2.0)
+	current_batch_size = difficulty.get("batch_size", 5)
+	timer.wait_time = current_spawn_interval
+	batch_size = current_batch_size
 
 func _process(delta: float) -> void:
 	if phase == RunPhase.MAP:
@@ -55,15 +65,17 @@ func _begin_map_stage() -> void:
 	phase = RunPhase.MAP
 	map_time_elapsed = 0.0
 	var map_id: String = GameData.run_map_order[map_index]
+	current_map_id = map_id
 	GameData.current_run_map_id = map_id
-	var enemy_type: String = GameData.run_enemy_type_by_map[map_id]
+	current_enemy_type = GameData.run_enemy_type_by_map.get(map_id, "basic")
 	var main_scene := get_tree().current_scene
-	if main_scene.has_method("apply_run_map"):
+	if main_scene and main_scene.has_method("apply_run_map"):
 		main_scene.call("apply_run_map", map_id)
 	else:
 		push_error("Main scene is missing apply_run_map")
+	_apply_difficulty_settings()
 	if is_instance_valid(quest_tracker):
-		quest_tracker.call("begin_map_stage", map_index + 1, GameData.run_map_order.size(), map_id, enemy_type)
+		quest_tracker.call("begin_map_stage", map_index + 1, GameData.run_map_order.size(), map_id, current_enemy_type)
 	timer.start()
 
 func _on_stage_completed() -> void:
@@ -163,10 +175,15 @@ func _on_timer_timeout() -> void:
 	if current_enemy_count >= max_active_enemies:
 		return
 
-	var map_id: String = GameData.current_run_map_id
-	var enemy_type: String = GameData.run_enemy_type_by_map[map_id]
+	if current_map_id.is_empty():
+		current_map_id = GameData.current_run_map_id
+	if current_map_id.is_empty():
+		current_map_id = GameData.run_map_order[0] if not GameData.run_map_order.is_empty() else "map_1"
+	if not GameData.run_enemy_type_by_map.has(current_map_id):
+		GameData.start_random_run()
+	current_enemy_type = GameData.run_enemy_type_by_map.get(current_map_id, "basic")
 	var enemy_scene: PackedScene
-	match enemy_type:
+	match current_enemy_type:
 		"basic":
 			enemy_scene = basic_enemy_scene
 		"fast":
@@ -174,20 +191,22 @@ func _on_timer_timeout() -> void:
 		"ranged":
 			enemy_scene = ranged_enemy_scene
 		_:
-			push_error("Unknown enemy type for map %s: %s" % [map_id, enemy_type])
+			push_error("Unknown enemy type for map %s: %s" % [current_map_id, current_enemy_type])
 			return
 
-	for i in range(batch_size):
+	for i in range(max(1, current_batch_size)):
 		var spawn_distance = randf_range(520.0, 720.0)
 		var spawn_angle = randf() * PI * 2
 		var spawn_offset = Vector2(cos(spawn_angle), sin(spawn_angle)) * spawn_distance
 		var spawn_position = player.global_position + spawn_offset
 		if not enemy_scene:
-			push_error("Missing enemy scene for type %s" % enemy_type)
+			push_error("Missing enemy scene for type %s" % current_enemy_type)
 			return
 		var enemy := enemy_scene.instantiate() as BaseEnemy
 		if not enemy:
-			push_error("Enemy scene for %s does not use BaseEnemy" % enemy_type)
+			push_error("Enemy scene for %s does not use BaseEnemy" % current_enemy_type)
 			return
 		enemy.global_position = spawn_position
 		get_tree().current_scene.add_child(enemy)
+		if get_tree().get_nodes_in_group("enemies").size() >= max_active_enemies:
+			break

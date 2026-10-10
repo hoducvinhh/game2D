@@ -15,7 +15,7 @@ var touch_pointer_id: int = -1
 # Cooldowns and Rage
 var dash_cooldown: float = 2.0
 var dash_timer: float = 0.0
-var rage_percent: float = 0.0 # 0.0 to 100.0
+var rage_percent: float = 100.0 # First ultimate is available immediately.
 const ULTIMATE_ICON_PATH := "res://assets/sprites/ui/btn_utilmate.png"
 
 @onready var root_control: Control = $Control

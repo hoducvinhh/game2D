@@ -73,19 +73,33 @@ func _apply_selected_character_texture() -> void:
 		"attack": character.get("attack_path", ""),
 		"jump": character.get("jump_path", "")
 	}
+	var run_frame_paths: Array = character.get("run_frames", [])
 	var frames := animated_sprite.sprite_frames.duplicate() as SpriteFrames
 	for animation_name in animation_paths:
 		var texture_path: String = animation_paths[animation_name]
-		if texture_path.is_empty() or not ResourceLoader.exists(texture_path):
-			continue
-		var texture := load(texture_path) as Texture2D
-		if not texture:
-			continue
 		if not frames.has_animation(animation_name):
 			frames.add_animation(animation_name)
 		frames.clear(animation_name)
-		frames.add_frame(animation_name, texture)
-		frames.set_animation_speed(animation_name, 8.0)
+		if animation_name == "run" and not run_frame_paths.is_empty():
+			for frame_index in range(run_frame_paths.size()):
+				var frame_path: String = run_frame_paths[frame_index]
+				if not ResourceLoader.exists(frame_path):
+					push_error("Missing run animation frame: %s" % frame_path)
+					continue
+				var frame_texture := load(frame_path) as Texture2D
+				if not frame_texture:
+					push_error("Cannot load run animation frame: %s" % frame_path)
+					continue
+				var frame_duration := 0.75 if frame_index == 2 else 1.0
+				frames.add_frame(animation_name, frame_texture, frame_duration)
+		else:
+			if texture_path.is_empty() or not ResourceLoader.exists(texture_path):
+				continue
+			var texture := load(texture_path) as Texture2D
+			if not texture:
+				continue
+			frames.add_frame(animation_name, texture)
+		frames.set_animation_speed(animation_name, 10.0 if animation_name == "run" and not run_frame_paths.is_empty() else 8.0)
 		frames.set_animation_loop(animation_name, not ["attack", "jump"].has(animation_name))
 	animated_sprite.stop()
 	animated_sprite.sprite_frames = frames
@@ -125,6 +139,10 @@ func perform_dash() -> void:
 
 # --- TẤN CÔNG CHỦ ĐỘNG (ACTIVE MELEE ATTACK) ---
 func perform_active_attack() -> void:
+	var sugarcane := weapons.get_node_or_null("Sugarcane")
+	if sugarcane and sugarcane.has_method("manual_attack"):
+		sugarcane.call("manual_attack")
+
 	if attack_cooldown_timer > 0.0:
 		return
 	var cd = 0.25 if ultimate_buff_timer > 0.0 else 0.45
