@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/enemies/fast_enemy.png" id="2_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fast"]
-size = Vector2(168, 152)
+size = Vector2(43, 107)
 
 [node name="FastEnemy" type="CharacterBody2D" groups=["enemies"]]
 collision_layer = 2
@@ -21,9 +21,9 @@ animation_fps = 7.0
 position = Vector2(0, -12)
 region_enabled = true
 region_rect = Rect2(19, 111, 150, 147)
-scale = Vector2(1.36, 1.36)
+scale = Vector2(0.81, 0.81)
 texture = ExtResource("2_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-8, -4)
+position = Vector2(0.5, 2.5)
 shape = SubResource("RectangleShape2D_fast")

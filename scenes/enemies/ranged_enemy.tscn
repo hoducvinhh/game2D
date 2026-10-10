@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/enemies/ranged_enemy.png" id="2_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ranged"]
-size = Vector2(176, 272)
+size = Vector2(43, 107)
 
 [node name="RangedEnemy" type="CharacterBody2D" groups=["enemies"]]
 collision_layer = 2
@@ -21,9 +21,9 @@ animation_fps = 5.0
 position = Vector2(0, -20)
 region_enabled = true
 region_rect = Rect2(20, 68, 135, 210)
-scale = Vector2(1.68, 1.68)
+scale = Vector2(0.57, 0.57)
 texture = ExtResource("2_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-10, -6)
+position = Vector2(0.5, 2.5)
 shape = SubResource("RectangleShape2D_ranged")

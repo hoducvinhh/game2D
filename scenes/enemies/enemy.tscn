@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://c1w24i5f38xm2" path="res://assets/sprites/enemies/enemy.png" id="2_8e3ao"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kqtwu"]
-size = Vector2(148, 404)
+size = Vector2(43, 107)
 
 [node name="Enemy" type="CharacterBody2D" unique_id=1842331078 groups=["enemies"]]
 collision_layer = 2
@@ -14,9 +14,9 @@ speed = 110.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=79318158]
 position = Vector2(0, -20)
-scale = Vector2(1.2, 1.224)
+scale = Vector2(0.3, 0.3)
 texture = ExtResource("2_8e3ao")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2099504676]
-position = Vector2(-10, -6)
+position = Vector2(0.5, 2.5)
 shape = SubResource("RectangleShape2D_kqtwu")
