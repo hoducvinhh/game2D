@@ -1,8 +1,8 @@
 extends Control
 
-@onready var master_slider: HSlider = $MasterSlider
-@onready var btn_back: Button = $BtnBack
-@onready var touch_controls_check: CheckButton = get_node_or_null("TouchControlsCheck")
+@onready var master_slider: HSlider = $CenterContainer/Panel/MarginContainer/Content/MasterSlider
+@onready var btn_back: Button = $CenterContainer/Panel/MarginContainer/Content/BtnBack
+@onready var touch_controls_check: CheckButton = $CenterContainer/Panel/MarginContainer/Content/TouchControlsCheck
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
