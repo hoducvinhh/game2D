@@ -4,11 +4,11 @@ extends Node2D
 var level: int = 1
 const MAX_LEVEL: int = 5
 var is_evolved: bool = false
+var cooldown_duration: float = 12.0
+var cooldown_remaining: float = 0.0
 
 @export var fear_duration: float = 2.5
 @export var fear_radius: float = 220.0 # Bán kính sóng âm phát ra
-
-@onready var ring_timer: Timer = $RingTimer
 
 const UPGRADE_DESCRIPTIONS = {
 	2: "Tăng 1 giây thời gian hoảng sợ",
@@ -17,16 +17,15 @@ const UPGRADE_DESCRIPTIONS = {
 	5: "Gây hoảng sợ cực đại (4 giây)"
 }
 
-func _ready() -> void:
-	ring_timer.timeout.connect(_on_ring_timer_timeout)
-	# Kích hoạt hoảng sợ tức thì ngay khi vừa tạo node
-	trigger_fear()
+func _process(delta: float) -> void:
+	cooldown_remaining = maxf(0.0, cooldown_remaining - delta)
 
-func _on_ring_timer_timeout() -> void:
+func activate() -> bool:
+	if cooldown_remaining > 0.0:
+		return false
+	cooldown_remaining = cooldown_duration
 	trigger_fear()
-	var player := get_tree().get_first_node_in_group("player")
-	var attack_speed: float = player.get_attack_speed_multiplier() if player and player.has_method("get_attack_speed_multiplier") else 1.0
-	ring_timer.start(ring_timer.wait_time / attack_speed)
+	return true
 
 func trigger_fear() -> void:
 	# Hiệu ứng nảy nhẹ khi phát chuông
@@ -50,18 +49,15 @@ func level_up() -> void:
 			3:
 				fear_radius *= 1.3
 			4:
-				ring_timer.wait_time = max(1.5, ring_timer.wait_time - 1.0)
+				cooldown_duration = maxf(7.0, cooldown_duration - 2.0)
 			5:
 				fear_duration = 4.5
 		
-		# Nâng cấp level cũng nổ chuông ngay lập tức
-		trigger_fear()
-
 func evolve() -> bool:
 	if is_evolved or level < MAX_LEVEL:
 		return false
 	is_evolved = true
 	fear_duration += 2.0
 	fear_radius *= 1.5
-	ring_timer.wait_time = maxf(1.0, ring_timer.wait_time * 0.65)
+	cooldown_duration = maxf(6.0, cooldown_duration * 0.7)
 	return true

@@ -4,8 +4,11 @@ extends Node2D
 var level: int = 1
 const MAX_LEVEL: int = 5
 const DURATION: float = 10.0
-var remaining_duration: float = DURATION
+var remaining_duration: float = 0.0
+var cooldown_duration: float = 25.0
+var cooldown_remaining: float = 0.0
 var is_evolved: bool = false
+@onready var shield_sprite: Sprite2D = $Sprite2D
 
 # Tỉ lệ giảm sát thương theo từng cấp (% giảm trừ)
 var damage_reduction_rates = {
@@ -24,15 +27,24 @@ const UPGRADE_DESCRIPTIONS = {
 }
 
 func _process(delta: float) -> void:
-	if remaining_duration <= 0.0:
-		return
-	remaining_duration = maxf(0.0, remaining_duration - delta)
-	if remaining_duration == 0.0:
-		queue_free()
-		return
+	cooldown_remaining = maxf(0.0, cooldown_remaining - delta)
+	if remaining_duration > 0.0:
+		remaining_duration = maxf(0.0, remaining_duration - delta)
+		rotation += 1.5 * delta
+		if remaining_duration == 0.0:
+			visible = false
 
-	# Hiệu ứng khiên tự xoay tròn nhẹ quanh player
-	rotation += 1.5 * delta
+func activate() -> bool:
+	if cooldown_remaining > 0.0:
+		return false
+	cooldown_remaining = DURATION + cooldown_duration
+	remaining_duration = DURATION
+	rotation = 0.0
+	visible = true
+	return true
+
+func _ready() -> void:
+	visible = false
 
 func level_up() -> void:
 	if level < MAX_LEVEL:

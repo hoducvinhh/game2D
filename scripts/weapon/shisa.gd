@@ -7,7 +7,8 @@ const MAX_LEVEL: int = 8
 
 # Thông số trạng thái
 var attack_duration: float = 5.0   # Thời gian duy trì phun (giây)
-var attack_cooldown: float = 3.0   # Thời gian hồi chiêu sau khi phun xong (giây)
+var attack_cooldown: float = 12.0
+var cooldown_remaining: float = 0.0
 var damage_per_tick: int = 15      # Sát thương mỗi nhịp
 var effect_scale: float = 1.0
 var is_evolved: bool = false
@@ -34,28 +35,28 @@ func _ready() -> void:
 		attack_area.stop_attack()
 
 func _process(delta: float) -> void:
-	var player := get_tree().get_first_node_in_group("player")
-	var cooldown_multiplier: float = player.get_attack_speed_multiplier() if player and player.has_method("get_attack_speed_multiplier") and not is_attacking else 1.0
-	state_timer += delta * cooldown_multiplier
-	
+	cooldown_remaining = maxf(0.0, cooldown_remaining - delta)
 	if is_attacking:
+		state_timer += delta
 		aim_at_nearest_enemy()
 		
 		if state_timer >= attack_duration:
 			is_attacking = false
 			state_timer = 0.0
 			attack_area.stop_attack()
-	else:
-		if state_timer >= attack_cooldown:
-			var enemies = get_tree().get_nodes_in_group("enemies")
-			if not enemies.is_empty():
-				is_attacking = true
-				state_timer = 0.0
-				aim_at_nearest_enemy()
-				if player and player.has_method("play_attack_animation"):
-					player.play_attack_animation()
-				# Truyền cả sát thương lẫn scale vào attack_area để tránh bị Tween ghi đè
-				attack_area.start_attack(damage_per_tick, effect_scale)
+
+func activate() -> bool:
+	if cooldown_remaining > 0.0:
+		return false
+	cooldown_remaining = attack_duration + attack_cooldown
+	is_attacking = true
+	state_timer = 0.0
+	aim_at_nearest_enemy()
+	var player := get_tree().get_first_node_in_group("player")
+	if player and player.has_method("play_attack_animation"):
+		player.play_attack_animation()
+	attack_area.start_attack(damage_per_tick, effect_scale)
+	return true
 
 func aim_at_nearest_enemy() -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -93,7 +94,7 @@ func upgrade() -> void:
 		8:
 			damage_per_tick += 12
 			attack_duration += 1.0
-			attack_cooldown *= 0.7
+			attack_cooldown *= 0.8
 			
 	# Cập nhật ngay lập tức nếu đang trong lúc phun
 	if is_attacking and attack_area:

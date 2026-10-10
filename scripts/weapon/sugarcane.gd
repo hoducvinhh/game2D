@@ -10,7 +10,7 @@ var attack_cooldown: float = 0.8
 var damage: int = 20
 var bullet_count: int = 1
 var attack_speed: float = 500.0
-var attack_timer: float = 0.8
+var cooldown_remaining: float = 0.0
 var is_evolved: bool = false
 
 const UPGRADE_DESCRIPTIONS = {
@@ -26,13 +26,14 @@ const UPGRADE_DESCRIPTIONS = {
 func _process(delta: float) -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	var speed_multiplier: float = player.get_attack_speed_multiplier() if player and player.has_method("get_attack_speed_multiplier") else 1.0
-	attack_timer = minf(attack_cooldown, attack_timer + delta * speed_multiplier)
+	cooldown_remaining = maxf(0.0, cooldown_remaining - delta * speed_multiplier)
 
-func manual_attack() -> void:
-	if attack_timer < attack_cooldown:
-		return
-	attack_timer = 0.0
+func activate() -> bool:
+	if cooldown_remaining > 0.0 or get_tree().get_nodes_in_group("enemies").is_empty():
+		return false
+	cooldown_remaining = attack_cooldown
 	attack()
+	return true
 
 func attack() -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")

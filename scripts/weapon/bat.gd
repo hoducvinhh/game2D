@@ -9,8 +9,8 @@ const MAX_LEVEL: int = 5
 
 # Biến tham chiếu đến nhân vật để lấy vị trí và hướng nhìn
 var player: Node2D = null
-var attack_timer: float = 0.0
 var attack_interval: float = 1.2
+var cooldown_remaining: float = 0.0
 var is_evolved: bool = false
 
 # Các mốc mô tả nâng cấp
@@ -31,11 +31,7 @@ func _ready() -> void:
 		player = get_tree().get_first_node_in_group("player")
 	
 func _process(delta: float) -> void:
-	var speed_multiplier: float = player.get_attack_speed_multiplier() if is_instance_valid(player) and player.has_method("get_attack_speed_multiplier") else 1.0
-	attack_timer += delta * speed_multiplier
-	if attack_timer >= attack_interval:
-		attack_timer = 0.0
-		_on_attack_cooldown()
+	cooldown_remaining = maxf(0.0, cooldown_remaining - delta)
 	if player:
 		# 1. Bám theo vị trí của nhân vật
 		global_position = player.global_position
@@ -55,6 +51,19 @@ func _on_attack_cooldown() -> void:
 		animation_player.play("swing")
 	if not get_tree().get_nodes_in_group("enemies").is_empty() and player and player.has_method("play_attack_animation"):
 		player.play_attack_animation()
+
+func activate() -> bool:
+	if cooldown_remaining > 0.0 or get_tree().get_nodes_in_group("enemies").is_empty():
+		return false
+	cooldown_remaining = attack_interval
+	collision_shape.disabled = true
+	_on_attack_cooldown()
+	get_tree().create_timer(0.36).timeout.connect(_disable_hitbox_after_swing)
+	return true
+
+func _disable_hitbox_after_swing() -> void:
+	if is_instance_valid(self):
+		disable_hitbox()
 
 # Các hàm gọi trực tiếp từ AnimationPlayer bằng "Call Method Track"
 func enable_hitbox() -> void:

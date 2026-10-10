@@ -22,6 +22,7 @@ var dash_cooldown_timer: float = 0.0
 var ghost_trail_timer: float = 0.0
 
 var attack_cooldown_timer: float = 0.0
+var selected_weapon_id: String = ""
 var ultimate_buff_timer: float = 0.0
 var ultimate_bullet_timer: float = 0.0
 var touch_controls: TouchControls = null
@@ -50,6 +51,7 @@ func _ready() -> void:
 	_apply_selected_character_texture()
 	if animated_sprite:
 		animated_sprite.play("default")
+	select_weapon("Sugarcane")
 	weapons_changed.emit()
 	
 	# Kết nối với TouchControls (nếu có trên CanvasLayer)
@@ -145,9 +147,16 @@ func perform_dash() -> void:
 
 # --- TẤN CÔNG CHỦ ĐỘNG (ACTIVE MELEE ATTACK) ---
 func perform_active_attack() -> void:
-	var sugarcane := weapons.get_node_or_null("Sugarcane")
-	if sugarcane and sugarcane.has_method("manual_attack"):
-		sugarcane.call("manual_attack")
+	if not selected_weapon_id.is_empty():
+		var selected_weapon := weapons.get_node_or_null(selected_weapon_id)
+		if selected_weapon and selected_weapon.has_method("activate"):
+			selected_weapon.call("activate")
+			return
+		select_weapon("Sugarcane")
+		var default_weapon := weapons.get_node_or_null(selected_weapon_id)
+		if default_weapon and default_weapon.has_method("activate"):
+			default_weapon.call("activate")
+			return
 
 	if attack_cooldown_timer > 0.0:
 		return
@@ -177,6 +186,15 @@ func perform_active_attack() -> void:
 						
 	if hit_count > 0 and touch_controls:
 		touch_controls.add_rage(hit_count * 3.0)
+
+func select_weapon(weapon_id: String) -> void:
+	if weapon_id.is_empty():
+		weapon_id = "Sugarcane"
+	var weapon := weapons.get_node_or_null(weapon_id)
+	if not weapon or not weapon.has_method("activate"):
+		push_warning("Cannot select weapon without an activate method: %s" % weapon_id)
+		return
+	selected_weapon_id = weapon_id
 
 # --- CHIÊU NỘ TỐI THƯỢNG (ULTIMATE NOVA) ---
 func perform_ultimate() -> void:

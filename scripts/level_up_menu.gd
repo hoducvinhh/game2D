@@ -12,31 +12,31 @@ signal upgrade_selected(chosen_data: Dictionary)
 const WEAPON_DATABASE = {
 	"Sugarcane": {
 		"name": "Bã mía",
-		"desc": "Phóng mía về phía kẻ địch gần nhất",
+		"desc": "Chọn biểu tượng, rồi nhấn Đánh/J để bắn mía vào kẻ địch gần nhất",
 		"scene": preload("res://scenes/weapon/sugarcane.tscn"),
 		"icon": preload("res://assets/sprites/weapons/sugarcane/sugarcane.png") 
 	},
 	"Shisa": {
 		"name": "Shisa",
-		"desc": "Phun làn khói liên tục diện rộng",
+		"desc": "Chọn biểu tượng, rồi nhấn Đánh/J để phun khói diện rộng trong 5 giây",
 		"scene": preload("res://scenes/weapon/shisa.tscn"),
 		"icon": preload("res://assets/sprites/weapons/shisa/shisa.png")      
 	},
 	"Chay": {
 		"name": "Cái chày",
-		"desc": "Vung chày đập mạnh xuống đầu kẻ địch cận chiến",
+		"desc": "Chọn biểu tượng, rồi nhấn Đánh/J để vung chày đánh kẻ địch xung quanh",
 		"scene": preload("res://scenes/weapon/bat.tscn"),
 		"icon": preload("res://assets/sprites/weapons/bat/bat.png")      
 	},
 	"Shield": {
 		"name": "Khiên năng lượng",
-		"desc": "Giảm sát thương nhận vào trong 10 giây",
+		"desc": "Chọn biểu tượng, rồi nhấn Đánh/J để giảm sát thương trong 10 giây",
 		"scene": preload("res://scenes/weapon/shield.tscn"),
 		"icon": preload("res://assets/sprites/weapons/shield/shield.png")      
 	},
 	"Phone": {
 		"name": "Điện thoại phòng thủ",
-		"desc": "Alo Vũ à Vũ!",
+		"desc": "Chọn biểu tượng, rồi nhấn Đánh/J để khiến quái gần đó hoảng sợ",
 		"scene": preload("res://scenes/weapon/phone.tscn"),
 		"icon": preload("res://assets/sprites/weapons/phone/phone1.png")      
 	},
