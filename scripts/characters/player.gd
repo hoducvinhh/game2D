@@ -223,7 +223,16 @@ func _fire_ultimate_bullet_ring() -> void:
 		projectile.direction = Vector2.RIGHT.rotated(angle)
 		projectile.damage = bullet_damage
 		projectile.speed = bullet_speed
+		projectile.add_to_group("ultimate_projectiles")
 		get_tree().current_scene.add_child(projectile)
+
+func end_ultimate_for_stage_transition() -> void:
+	ultimate_buff_timer = 0.0
+	ultimate_bullet_timer = 0.0
+	modulate = Color.WHITE
+	for projectile in get_tree().get_nodes_in_group("ultimate_projectiles"):
+		if is_instance_valid(projectile):
+			projectile.queue_free()
 
 func _spawn_ghost_trail() -> void:
 	if not animated_sprite or not animated_sprite.sprite_frames:

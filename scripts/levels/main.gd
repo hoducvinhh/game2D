@@ -3,9 +3,12 @@ extends Node2D
 @onready var player: CharacterBody2D = $CharacterBody2D/Player # Hoặc $Player tùy cây node của bạn
 @onready var level_up_menu: Control = $CanvasLayer/LevelUpMenu
 @onready var gold_label: Label = $CanvasLayer/GoldLabel
+@onready var exp_bar: ProgressBar = $CanvasLayer/EXPBar
 var weapons_row: HBoxContainer
 var weapon_slots: Dictionary = {}
 var map_hazard: Node2D
+var player_health_bar: ProgressBar
+var player_health_label: Label
 
 const WEAPON_HUD_ITEMS := [
 	{"id": "Sugarcane", "name": "Bã mía", "icon": "res://assets/sprites/weapons/sugarcane/sugarcane.png"},
@@ -23,7 +26,10 @@ func _ready() -> void:
 	# Tìm lại player nếu đường dẫn phía trên bị lệch
 	if not player:
 		player = get_tree().get_first_node_in_group("player")
-		
+	if is_instance_valid(player):
+		var overhead_health_bar := player.get_node_or_null("HealthBar")
+		if overhead_health_bar:
+			overhead_health_bar.hide()
 	if player and level_up_menu:
 		player.player_leveled_up.connect(_on_player_leveled_up)
 		player.weapons_changed.connect(_refresh_weapons_hud)
@@ -31,10 +37,12 @@ func _ready() -> void:
 	_create_weapons_hud()
 	_refresh_weapons_hud()
 	_create_enemy_minimap()
+	_create_player_status_hud()
 	_create_quest_tracker()
 
 func _process(_delta: float) -> void:
 	_update_weapon_cooldowns()
+	_update_player_health_hud()
 
 func _create_quest_tracker() -> void:
 	var tracker = preload("res://scripts/ui/quest_tracker.gd").new()
@@ -44,9 +52,83 @@ func _create_quest_tracker() -> void:
 
 func _create_enemy_minimap() -> void:
 	var minimap = preload("res://scripts/ui/enemy_minimap.gd").new()
-	minimap.position = Vector2(14.0, 70.0)
+	minimap.position = Vector2.ZERO
 	minimap.player = player
 	$CanvasLayer.add_child(minimap)
+
+func _create_player_status_hud() -> void:
+	var panel := PanelContainer.new()
+	panel.position = Vector2(128.0, 0.0)
+	panel.size = Vector2(212.0, 86.0)
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.025, 0.035, 0.035, 0.86)
+	panel_style.border_color = Color(0.78, 0.69, 0.39, 0.9)
+	panel_style.set_border_width_all(1)
+	panel_style.set_corner_radius_all(6)
+	panel_style.content_margin_left = 8
+	panel_style.content_margin_top = 4
+	panel_style.content_margin_right = 8
+	panel_style.content_margin_bottom = 4
+	panel.add_theme_stylebox_override("panel", panel_style)
+	$CanvasLayer.add_child(panel)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 2)
+	panel.add_child(content)
+
+	gold_label.custom_minimum_size = Vector2(196.0, 21.0)
+	gold_label.add_theme_font_size_override("font_size", 16)
+	$CanvasLayer.remove_child(gold_label)
+	content.add_child(gold_label)
+
+	player_health_bar = ProgressBar.new()
+	player_health_bar.custom_minimum_size = Vector2(196.0, 20.0)
+	player_health_bar.show_percentage = false
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color(0.09, 0.055, 0.055, 1.0)
+	background.set_corner_radius_all(3)
+	player_health_bar.add_theme_stylebox_override("background", background)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(0.84, 0.2, 0.17, 1.0)
+	fill.set_corner_radius_all(3)
+	player_health_bar.add_theme_stylebox_override("fill", fill)
+	content.add_child(player_health_bar)
+
+	player_health_label = Label.new()
+	player_health_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	player_health_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	player_health_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	player_health_label.add_theme_font_size_override("font_size", 11)
+	player_health_label.add_theme_color_override("font_color", Color.WHITE)
+	player_health_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	player_health_label.add_theme_constant_override("shadow_offset_x", 1)
+	player_health_label.add_theme_constant_override("shadow_offset_y", 1)
+	player_health_bar.add_child(player_health_label)
+
+	$CanvasLayer.remove_child(exp_bar)
+	exp_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	exp_bar.custom_minimum_size = Vector2(196.0, 17.0)
+	exp_bar.show_percentage = true
+	var exp_background := StyleBoxFlat.new()
+	exp_background.bg_color = Color(0.055, 0.075, 0.055, 1.0)
+	exp_background.set_corner_radius_all(3)
+	exp_bar.add_theme_stylebox_override("background", exp_background)
+	var exp_fill := StyleBoxFlat.new()
+	exp_fill.bg_color = Color(0.45, 0.78, 0.25, 1.0)
+	exp_fill.set_corner_radius_all(3)
+	exp_bar.add_theme_stylebox_override("fill", exp_fill)
+	content.add_child(exp_bar)
+
+	_update_player_health_hud()
+
+func _update_player_health_hud() -> void:
+	if not is_instance_valid(player) or not is_instance_valid(player_health_bar) or not is_instance_valid(player_health_label):
+		return
+	var current_health := int(player.get("health"))
+	var maximum_health := int(player.get("max_health"))
+	player_health_bar.max_value = maximum_health
+	player_health_bar.value = current_health
+	player_health_label.text = "Máu: %d / %d" % [current_health, maximum_health]
 
 func _start_map_hazards() -> void:
 	if is_instance_valid(map_hazard):

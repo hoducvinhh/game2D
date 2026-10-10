@@ -105,6 +105,9 @@ func _on_continue_requested(should_continue: bool) -> void:
 		get_tree().quit()
 
 func _advance_run() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if is_instance_valid(player) and player.has_method("end_ultimate_for_stage_transition"):
+		player.call("end_ultimate_for_stage_transition")
 	_clear_stage_entities()
 	map_index += 1
 	if map_index >= GameData.run_map_order.size():
