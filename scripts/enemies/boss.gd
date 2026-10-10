@@ -20,6 +20,7 @@ func _ready() -> void:
 	gold_drop_chance = 1.0
 	gold_drop_min = 40
 	gold_drop_max = 80
+	projectile_texture = null
 	
 	super._ready()
 	modulate = Color(1.1, 0.4, 1.3) # Tím Hư Không oai vệ

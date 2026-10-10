@@ -30,7 +30,7 @@ const WEAPON_DATABASE = {
 	},
 	"Shield": {
 		"name": "Khiên năng lượng",
-		"desc": "Khiên chống NPC",
+		"desc": "Giảm sát thương nhận vào trong 10 giây",
 		"scene": preload("res://scenes/weapon/shield.tscn"),
 		"icon": preload("res://assets/sprites/weapons/shield/shield.png")      
 	},

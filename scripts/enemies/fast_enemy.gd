@@ -8,6 +8,11 @@ func _ready() -> void:
 	speed = 175.0
 	max_health = 22
 	damage = 7
+	projectile_texture = preload("res://assets/sprites/enemies/dan_doi.png")
+	projectile_cooldown = 3.5
+	projectile_damage = 5
+	projectile_speed = 340.0
+	projectile_scale = 0.1
 	super._ready()
 	modulate = Color(1.3, 0.65, 0.35)
 	flank_dir = 1.0 if randf() > 0.5 else -1.0

@@ -3,6 +3,8 @@ extends Node2D
 
 var level: int = 1
 const MAX_LEVEL: int = 5
+const DURATION: float = 10.0
+var remaining_duration: float = DURATION
 var is_evolved: bool = false
 
 # Tỉ lệ giảm sát thương theo từng cấp (% giảm trừ)
@@ -22,6 +24,13 @@ const UPGRADE_DESCRIPTIONS = {
 }
 
 func _process(delta: float) -> void:
+	if remaining_duration <= 0.0:
+		return
+	remaining_duration = maxf(0.0, remaining_duration - delta)
+	if remaining_duration == 0.0:
+		queue_free()
+		return
+
 	# Hiệu ứng khiên tự xoay tròn nhẹ quanh player
 	rotation += 1.5 * delta
 
@@ -31,6 +40,8 @@ func level_up() -> void:
 
 # Trả về % sát thương được giảm hiện tại
 func get_damage_reduction() -> float:
+	if remaining_duration <= 0.0:
+		return 0.0
 	return damage_reduction_rates.get(level, 0.15)
 
 func evolve() -> bool:

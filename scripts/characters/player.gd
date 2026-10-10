@@ -23,7 +23,13 @@ var ghost_trail_timer: float = 0.0
 
 var attack_cooldown_timer: float = 0.0
 var ultimate_buff_timer: float = 0.0
+var ultimate_bullet_timer: float = 0.0
 var touch_controls: TouchControls = null
+
+const ULTIMATE_DURATION: float = 5.0
+const ULTIMATE_BULLET_INTERVAL: float = 0.25
+const ULTIMATE_BULLETS_PER_VOLLEY: int = 8
+const SUGARCANE_BULLET_SCENE: PackedScene = preload("res://scenes/weapon/sugarcane_attack.tscn")
 
 signal exp_changed(current_exp: int, max_exp: int)
 signal player_leveled_up(current_level: int)
@@ -176,24 +182,30 @@ func perform_active_attack() -> void:
 func perform_ultimate() -> void:
 	if not touch_controls or not touch_controls.consume_rage():
 		return
-	ultimate_buff_timer = 5.0
+	ultimate_buff_timer = ULTIMATE_DURATION
+	ultimate_bullet_timer = ULTIMATE_BULLET_INTERVAL
+	_fire_ultimate_bullet_ring()
 	shake_screen(14.0, 0.35)
-	# Nổ sóng sát thương quét sạch khu vực 300px
-	var enemies = get_tree().get_nodes_in_group("enemies")
-	for enemy in enemies:
-		if is_instance_valid(enemy) and not enemy.get("is_dead"):
-			var dist = global_position.distance_to(enemy.global_position)
-			if dist <= 320.0:
-				var push_dir = (enemy.global_position - global_position).normalized()
-				if enemy.has_method("take_damage"):
-					enemy.take_damage(roundi(120 * GameData.get_damage_multiplier()))
-				if "velocity" in enemy:
-					enemy.velocity += push_dir * 450.0
 
 	# Hiệu ứng lóe sáng toàn thân
 	var tw = create_tween()
 	tw.tween_property(self, "modulate", Color(2.0, 1.8, 0.4), 0.2)
 	tw.tween_property(self, "modulate", Color.WHITE, 0.3)
+
+func _fire_ultimate_bullet_ring() -> void:
+	var sugarcane := weapons.get_node_or_null("Sugarcane")
+	var bullet_damage: int = int(sugarcane.get("damage")) if sugarcane else 20
+	var bullet_speed: float = float(sugarcane.get("attack_speed")) if sugarcane else 500.0
+	bullet_damage = roundi(bullet_damage * GameData.get_damage_multiplier())
+
+	for i in range(ULTIMATE_BULLETS_PER_VOLLEY):
+		var projectile = SUGARCANE_BULLET_SCENE.instantiate()
+		var angle := TAU * float(i) / float(ULTIMATE_BULLETS_PER_VOLLEY)
+		projectile.global_position = global_position
+		projectile.direction = Vector2.RIGHT.rotated(angle)
+		projectile.damage = bullet_damage
+		projectile.speed = bullet_speed
+		get_tree().current_scene.add_child(projectile)
 
 func _spawn_ghost_trail() -> void:
 	if not animated_sprite or not animated_sprite.sprite_frames:
@@ -297,6 +309,11 @@ func _physics_process(delta: float) -> void:
 	dash_cooldown_timer = maxf(0.0, dash_cooldown_timer - delta)
 	attack_cooldown_timer = maxf(0.0, attack_cooldown_timer - delta)
 	ultimate_buff_timer = maxf(0.0, ultimate_buff_timer - delta)
+	if ultimate_buff_timer > 0.0:
+		ultimate_bullet_timer -= delta
+		if ultimate_bullet_timer <= 0.0:
+			_fire_ultimate_bullet_ring()
+			ultimate_bullet_timer = ULTIMATE_BULLET_INTERVAL
 	_map_slow_timer = maxf(0.0, _map_slow_timer - delta)
 	if _map_slow_timer <= 0.0:
 		_map_slow_multiplier = 1.0

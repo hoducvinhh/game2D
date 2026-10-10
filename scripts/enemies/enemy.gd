@@ -1,8 +1,15 @@
 extends CharacterBody2D
 class_name BaseEnemy
 
+const ENEMY_BULLET_SCENE: PackedScene = preload("res://scenes/enemies/enemy_bullet.tscn")
+
 @export var speed: float = 120.0
 @export var damage: int = 10
+@export var projectile_texture: Texture2D = preload("res://assets/sprites/enemies/dan_cauthu.png")
+@export var projectile_cooldown: float = 3.0
+@export var projectile_damage: int = 6
+@export var projectile_speed: float = 280.0
+@export var projectile_scale: float = 0.1
 
 # --- THÔNG SỐ MÁU ---
 @export var max_health: int = 40
@@ -30,6 +37,7 @@ var walk_anim_timer: float = 0.0
 var animation_timer: float = 0.0
 var animation_frame: int = 0
 var animation_base_rect: Rect2
+var projectile_timer: float = 1.5
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
@@ -54,6 +62,26 @@ func _process(delta: float) -> void:
 				animation_base_rect.size.x,
 				animation_base_rect.size.y
 			)
+
+	if is_dead or is_fearing or not is_instance_valid(player) or not projectile_texture:
+		return
+	projectile_timer -= delta
+	if projectile_timer <= 0.0:
+		_fire_projectile()
+		projectile_timer = projectile_cooldown
+
+func _fire_projectile() -> void:
+	if not is_instance_valid(player):
+		return
+	var direction := global_position.direction_to(player.global_position)
+	var projectile := ENEMY_BULLET_SCENE.instantiate() as Area2D
+	projectile.set("direction", direction)
+	projectile.set("damage", projectile_damage)
+	projectile.set("speed", projectile_speed)
+	projectile.set("projectile_texture", projectile_texture)
+	projectile.set("projectile_scale", projectile_scale)
+	projectile.global_position = global_position + direction * 20.0
+	get_tree().current_scene.add_child(projectile)
 
 # --- HÀM KÍCH HOẠT TRẠNG THÁI HOẢNG SỢ ---
 func apply_fear(duration: float, source_pos: Vector2) -> void:

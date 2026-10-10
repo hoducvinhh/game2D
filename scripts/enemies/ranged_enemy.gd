@@ -4,6 +4,11 @@ class_name RangedEnemy
 func _ready() -> void:
 	speed = 85.0
 	max_health = 30
+	projectile_texture = preload("res://assets/sprites/enemies/dan_phapsu.png")
+	projectile_cooldown = 2.0
+	projectile_damage = 8
+	projectile_speed = 240.0
+	projectile_scale = 0.075
 	super._ready()
 	modulate = Color(0.85, 0.45, 1.2) # Màu tím phép thuật
 
