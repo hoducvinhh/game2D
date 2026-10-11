@@ -4,8 +4,11 @@ class_name CompanionPet
 @export var follow_speed: float = 230.0
 @export var pickup_speed: float = 290.0
 @export var follow_distance: float = 85.0
+@export var pickup_search_radius: float = 600.0
 @export var animation_frame_step: float = 169.0
 @export var animation_fps: float = 7.0
+@export var animation_frames: Array[Texture2D] = []
+@export var idle_animation_frame: Texture2D
 
 var player: CharacterBody2D = null
 var target_pickup: Node2D = null
@@ -22,6 +25,9 @@ func _ready() -> void:
 	player = get_tree().get_first_node_in_group("player") as CharacterBody2D
 	if sprite:
 		animation_base_rect = sprite.region_rect
+		if not animation_frames.is_empty():
+			sprite.region_enabled = false
+			sprite.texture = idle_animation_frame if idle_animation_frame else animation_frames[0]
 
 func _physics_process(delta: float) -> void:
 	if not is_instance_valid(player):
@@ -39,6 +45,12 @@ func _physics_process(delta: float) -> void:
 		search_timer = 0.35
 		_find_nearest_pickup()
 		
+	if is_instance_valid(target_pickup) and (
+		target_pickup.is_queued_for_deletion()
+		or ("is_magnetized" in target_pickup and target_pickup.is_magnetized)
+	):
+		target_pickup = null
+
 	if is_instance_valid(target_pickup):
 		var to_item = (target_pickup.global_position - global_position).normalized()
 		velocity = to_item * pickup_speed
@@ -66,6 +78,19 @@ func _physics_process(delta: float) -> void:
 func _update_animation(delta: float, is_player_moving: bool) -> void:
 	if not sprite:
 		return
+	if not animation_frames.is_empty():
+		if is_player_moving:
+			animation_timer += delta
+			if animation_timer >= 1.0 / animation_fps:
+				animation_timer = 0.0
+				animation_frame = (animation_frame + 1) % animation_frames.size()
+				sprite.texture = animation_frames[animation_frame]
+		else:
+			animation_timer = 0.0
+			animation_frame = 0
+			sprite.texture = idle_animation_frame if idle_animation_frame else animation_frames[0]
+		return
+
 	if is_player_moving:
 		animation_timer += delta
 		if animation_timer >= 1.0 / animation_fps:
@@ -93,13 +118,16 @@ func _find_nearest_pickup() -> void:
 	candidates.append_array(get_tree().get_nodes_in_group("gold_coins"))
 	candidates.append_array(get_tree().get_nodes_in_group("pickups"))
 	
-	var closest_dist: float = 380.0
+	var closest_dist := pickup_search_radius
 	var closest_node: Node2D = null
 	for item in candidates:
-		if is_instance_valid(item) and item is Node2D:
-			var d = global_position.distance_to(item.global_position)
-			if d < closest_dist:
-				closest_dist = d
-				closest_node = item
+		if not is_instance_valid(item) or not (item is Node2D) or item.is_queued_for_deletion():
+			continue
+		if "is_magnetized" in item and item.is_magnetized:
+			continue
+		var d := global_position.distance_to(item.global_position)
+		if d < closest_dist:
+			closest_dist = d
+			closest_node = item
 				
 	target_pickup = closest_node

@@ -114,6 +114,21 @@ const TALENTS := {
 	"greed": {"name": "Thần Tài May Mắn", "base_cost": 60, "max_level": 5, "desc": "+10% Tỉ lệ nhận vàng"}
 }
 
+const PETS := {
+	"default": {
+		"name": "Cún Đồng Hành",
+		"description": "Bé cún đồng hành mặc định.",
+		"price": 0,
+		"preview_path": "res://assets/sprites/characters/pet.png"
+	},
+	"snake": {
+		"name": "Rắn Trườn",
+		"description": "Pet rắn xanh với hoạt ảnh trườn 4 khung.",
+		"price": 150,
+		"preview_path": "res://assets/sprites/characters/pet_snake_frames/pet_snake_1.png"
+	}
+}
+
 const ACHIEVEMENTS := {
 	"first_blood": {"name": "Khởi Đầu", "description": "Tiêu diệt 10 kẻ địch.", "reward": 25, "target": 10},
 	"gold_collector": {"name": "Tích Tiểu Thành Đại", "description": "Nhặt tổng cộng 100 vàng.", "reward": 40, "target": 100},
@@ -134,6 +149,8 @@ var talent_levels := {
 var gold: int = 0
 var unlocked_characters: Array[String] = ["default"]
 var selected_character_id: String = "default"
+var unlocked_pets: Array[String] = ["default"]
+var selected_pet_id: String = "default"
 var selected_map_id: String = "map_1"
 var run_map_order: Array[String] = []
 var run_enemy_type_by_map: Dictionary = {}
@@ -239,6 +256,31 @@ func select_character(character_id: String) -> bool:
 	_save_profile()
 	return true
 
+func is_pet_unlocked(pet_id: String) -> bool:
+	return unlocked_pets.has(pet_id)
+
+func purchase_pet(pet_id: String) -> bool:
+	var pet: Dictionary = PETS.get(pet_id, {})
+	if pet.is_empty() or is_pet_unlocked(pet_id):
+		return false
+
+	var price: int = pet.get("price", 0)
+	if gold < price:
+		return false
+
+	gold -= price
+	unlocked_pets.append(pet_id)
+	_save_profile()
+	gold_changed.emit(gold)
+	return true
+
+func select_pet(pet_id: String) -> bool:
+	if not PETS.has(pet_id) or not is_pet_unlocked(pet_id):
+		return false
+	selected_pet_id = pet_id
+	_save_profile()
+	return true
+
 func select_map(map_id: String) -> bool:
 	if not MAPS.has(map_id):
 		return false
@@ -305,6 +347,16 @@ func _load_profile() -> void:
 	if not unlocked_characters.has("default"):
 		unlocked_characters.push_front("default")
 
+	unlocked_pets.clear()
+	var saved_pets: Array = config.get_value("profile", "unlocked_pets", ["default"])
+	for pet_id in saved_pets:
+		if pet_id is String and PETS.has(pet_id) and not unlocked_pets.has(pet_id):
+			unlocked_pets.append(pet_id)
+	if not unlocked_pets.has("default"):
+		unlocked_pets.push_front("default")
+	var saved_pet_selection: String = config.get_value("profile", "selected_pet_id", "default")
+	selected_pet_id = saved_pet_selection if is_pet_unlocked(saved_pet_selection) else "default"
+
 	var saved_selection: String = config.get_value("profile", "selected_character_id", "default")
 	selected_character_id = saved_selection if is_character_unlocked(saved_selection) else "default"
 	var saved_map: String = config.get_value("profile", "selected_map_id", "map_1")
@@ -337,6 +389,8 @@ func _save_profile() -> void:
 	config.set_value("profile", "gold", gold)
 	config.set_value("profile", "unlocked_characters", unlocked_characters)
 	config.set_value("profile", "selected_character_id", selected_character_id)
+	config.set_value("profile", "unlocked_pets", unlocked_pets)
+	config.set_value("profile", "selected_pet_id", selected_pet_id)
 	config.set_value("profile", "selected_map_id", selected_map_id)
 	config.set_value("profile", "selected_difficulty_id", selected_difficulty_id)
 	config.set_value("profile", "completed_runs", completed_runs)

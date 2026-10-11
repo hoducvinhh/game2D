@@ -1,6 +1,7 @@
 extends Node2D
 
 const COMPANION_PET_SCENE: PackedScene = preload("res://scenes/characters/companion_pet.tscn")
+const COMPANION_SNAKE_SCENE: PackedScene = preload("res://scenes/characters/companion_snake.tscn")
 
 @onready var player: CharacterBody2D = $CharacterBody2D/Player # Hoặc $Player tùy cây node của bạn
 @onready var level_up_menu: Control = $CanvasLayer/LevelUpMenu
@@ -52,7 +53,8 @@ func _create_companion_pet() -> void:
 	if is_instance_valid(existing_pet):
 		return
 
-	var pet := COMPANION_PET_SCENE.instantiate() as Node2D
+	var pet_scene := COMPANION_SNAKE_SCENE if GameData.selected_pet_id == "snake" else COMPANION_PET_SCENE
+	var pet := pet_scene.instantiate() as Node2D
 	if not pet:
 		push_error("Cannot spawn companion pet: pet scene root must be a Node2D")
 		return

@@ -21,13 +21,51 @@ const TALENT_ICON_COLORS := {
 
 @onready var gold_label: Label = $MarginContainer/VBoxContainer/Header/GoldLabel
 @onready var items_container: VBoxContainer = $MarginContainer/VBoxContainer/ScrollContainer/ItemsContainer
+@onready var scroll_container: ScrollContainer = $MarginContainer/VBoxContainer/ScrollContainer
 @onready var btn_back: Button = $MarginContainer/VBoxContainer/Header/BtnBack
+@onready var title_label: Label = $MarginContainer/VBoxContainer/Header/Title
+
+var pets_container: VBoxContainer
 
 func _ready() -> void:
 	btn_back.pressed.connect(_on_back_pressed)
 	GameData.gold_changed.connect(_on_gold_changed)
+	_create_shop_tabs()
 	_update_gold_label()
 	_build_talent_items()
+	_build_pet_items()
+
+func _create_shop_tabs() -> void:
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 8)
+	$MarginContainer/VBoxContainer.add_child(tabs)
+	$MarginContainer/VBoxContainer.move_child(tabs, scroll_container.get_index())
+
+	var talents_button := Button.new()
+	talents_button.text = "Nâng cấp"
+	talents_button.pressed.connect(_show_talents_tab)
+	tabs.add_child(talents_button)
+
+	var pets_button := Button.new()
+	pets_button.text = "Pet"
+	pets_button.pressed.connect(_show_pets_tab)
+	tabs.add_child(pets_button)
+
+	pets_container = VBoxContainer.new()
+	pets_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pets_container.add_theme_constant_override("separation", 12)
+	scroll_container.add_child(pets_container)
+	pets_container.hide()
+
+func _show_talents_tab() -> void:
+	items_container.show()
+	pets_container.hide()
+	title_label.text = "CỬA HÀNG NÂNG CẤP VĨNH VIỄN"
+
+func _show_pets_tab() -> void:
+	items_container.hide()
+	pets_container.show()
+	title_label.text = "CỬA HÀNG PET"
 
 func _update_gold_label() -> void:
 	gold_label.text = "🪙 Vàng: %d" % GameData.gold
@@ -35,6 +73,93 @@ func _update_gold_label() -> void:
 func _on_gold_changed(_total_gold: int) -> void:
 	_update_gold_label()
 	_build_talent_items()
+	_build_pet_items()
+
+func _build_pet_items() -> void:
+	if not is_instance_valid(pets_container):
+		return
+	for child in pets_container.get_children():
+		pets_container.remove_child(child)
+		child.queue_free()
+
+	for pet_id in GameData.PETS:
+		var info: Dictionary = GameData.PETS[pet_id]
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size.y = 150.0
+		var panel_style := StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.06, 0.07, 0.09, 0.9)
+		panel_style.border_color = Color(0.8, 0.65, 0.3, 0.6)
+		panel_style.set_border_width_all(1)
+		panel_style.set_corner_radius_all(8)
+		panel_style.content_margin_left = 14
+		panel_style.content_margin_top = 10
+		panel_style.content_margin_right = 14
+		panel_style.content_margin_bottom = 10
+		panel.add_theme_stylebox_override("panel", panel_style)
+		pets_container.add_child(panel)
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 16)
+		panel.add_child(row)
+		row.add_child(_create_pet_preview(info))
+
+		var details := VBoxContainer.new()
+		details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		details.add_theme_constant_override("separation", 6)
+		row.add_child(details)
+
+		var name_label := Label.new()
+		name_label.text = info.get("name", pet_id)
+		name_label.add_theme_font_size_override("font_size", 20)
+		name_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+		details.add_child(name_label)
+
+		var description := Label.new()
+		description.text = info.get("description", "")
+		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		description.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		description.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
+		details.add_child(description)
+
+		var action_button := Button.new()
+		action_button.custom_minimum_size = Vector2(170.0, 44.0)
+		row.add_child(action_button)
+
+		if GameData.is_pet_unlocked(pet_id):
+			if GameData.selected_pet_id == pet_id:
+				action_button.text = "Đang dùng"
+				action_button.disabled = true
+			else:
+				action_button.text = "Dùng pet này"
+				action_button.pressed.connect(_select_pet.bind(pet_id))
+		else:
+			var price: int = info.get("price", 0)
+			action_button.text = "Mua (%d vàng)" % price
+			action_button.disabled = GameData.gold < price
+			action_button.pressed.connect(_purchase_pet.bind(pet_id))
+
+func _create_pet_preview(info: Dictionary) -> TextureRect:
+	var preview := TextureRect.new()
+	preview.custom_minimum_size = Vector2(132.0, 112.0)
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var preview_path: String = info.get("preview_path", "")
+	if ResourceLoader.exists(preview_path):
+		preview.texture = load(preview_path) as Texture2D
+		if preview_path.ends_with("/pet.png") and preview.texture:
+			var atlas := AtlasTexture.new()
+			atlas.atlas = preview.texture
+			atlas.region = Rect2(35.0, 128.0, 128.0, 116.0)
+			preview.texture = atlas
+	return preview
+
+func _purchase_pet(pet_id: String) -> void:
+	GameData.purchase_pet(pet_id)
+	_build_pet_items()
+
+func _select_pet(pet_id: String) -> void:
+	GameData.select_pet(pet_id)
+	_build_pet_items()
 
 func _build_talent_items() -> void:
 	for child in items_container.get_children():

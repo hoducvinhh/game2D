@@ -10,7 +10,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if is_instance_valid(player):
 		var dist = global_position.distance_to(player.global_position)
-		if dist < GameData.get_pickup_radius(120.0):
+		if dist < GameData.get_pickup_radius(48.0):
 			global_position += (player.global_position - global_position).normalized() * 300.0 * delta
 
 func _on_body_entered(body: Node) -> void:

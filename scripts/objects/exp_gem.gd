@@ -13,9 +13,9 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if player:
-		# Hiệu ứng hút khi player đến gần (Bán kính 150 pixel)
+		# Chỉ hút khi người chơi đã ở gần; nam châm vẫn có thể hút từ xa.
 		var distance = global_position.distance_to(player.global_position)
-		if distance < GameData.get_pickup_radius(150.0):
+		if distance < GameData.get_pickup_radius(48.0):
 			is_magnetized = true
 		
 		if is_magnetized:

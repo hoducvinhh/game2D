@@ -2,7 +2,7 @@ extends Area2D
 
 @export var gold_amount: int = 5
 @export var magnet_speed: float = 350.0
-@export var magnet_radius: float = 150.0
+@export var magnet_radius: float = 48.0
 
 var player: Node2D
 var is_magnetized: bool = false
