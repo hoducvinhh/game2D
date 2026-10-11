@@ -1,7 +1,10 @@
 extends CanvasLayer
 
+const LOSS_SOUND: AudioStream = preload("res://assets/music/loss.mp3")
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	AudioManager.play_sound(LOSS_SOUND)
 	get_tree().paused = true
 
 	var overlay := ColorRect.new()

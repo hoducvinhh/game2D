@@ -150,6 +150,7 @@ func _build_ui() -> void:
 	footer.add_child(footer_spacer)
 	var start_button := _make_button("Vào game")
 	start_button.custom_minimum_size = Vector2(220, 52)
+	_style_lobby_button(start_button, true)
 	start_button.pressed.connect(_on_start_pressed)
 	footer.add_child(start_button)
 
@@ -158,7 +159,48 @@ func _make_button(button_text: String) -> Button:
 	button.text = button_text
 	button.custom_minimum_size = Vector2(120, 44)
 	button.add_theme_font_size_override("font_size", 18)
+	_style_lobby_button(button)
 	return button
+
+func _style_lobby_button(button: Button, is_primary: bool = false, is_selected: bool = false) -> void:
+	button.add_theme_color_override("font_color", Color(0.9, 0.87, 0.79))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.97, 0.85))
+	button.add_theme_color_override("font_pressed_color", Color(1.0, 0.89, 0.57))
+	button.add_theme_color_override("font_disabled_color", Color(1.0, 0.84, 0.38))
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.055, 0.065, 0.07, 0.96)
+	normal.border_color = Color(0.8, 0.61, 0.25, 0.9) if is_primary else Color(0.47, 0.4, 0.27, 0.9)
+	normal.set_border_width_all(2 if is_primary else 1)
+	normal.set_corner_radius_all(8)
+	normal.content_margin_left = 16
+	normal.content_margin_right = 16
+	normal.shadow_color = Color(0.0, 0.0, 0.0, 0.35)
+	normal.shadow_size = 3
+	if is_selected:
+		normal.bg_color = Color(0.29, 0.2, 0.075, 0.98)
+		normal.border_color = Color(1.0, 0.78, 0.27, 1.0)
+		normal.set_border_width_all(2)
+	button.add_theme_stylebox_override("normal", normal)
+
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.17, 0.15, 0.105, 1.0) if not is_primary else Color(0.31, 0.23, 0.105, 1.0)
+	hover.border_color = Color(1.0, 0.84, 0.42, 1.0)
+	hover.shadow_size = 6
+	button.add_theme_stylebox_override("hover", hover)
+
+	var pressed := hover.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(0.075, 0.08, 0.075, 1.0)
+	pressed.shadow_size = 1
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("focus", hover)
+
+	var disabled := normal.duplicate() as StyleBoxFlat
+	disabled.bg_color = Color(0.2, 0.16, 0.07, 0.96) if is_selected else Color(0.065, 0.065, 0.06, 0.9)
+	disabled.border_color = Color(1.0, 0.78, 0.27, 1.0) if is_selected else Color(0.32, 0.3, 0.25, 0.8)
+	disabled.set_border_width_all(2 if is_selected else 1)
+	disabled.shadow_size = 0
+	button.add_theme_stylebox_override("disabled", disabled)
 
 func _refresh_character() -> void:
 	if character_ids.is_empty():
@@ -180,11 +222,13 @@ func _refresh_character() -> void:
 		var is_selected := GameData.selected_character_id == character_id
 		action_button.text = "Đang chọn" if is_selected else "Chọn nhân vật"
 		action_button.disabled = is_selected
+		_style_lobby_button(action_button, true, is_selected)
 	else:
 		var price: int = character.get("price", 0)
 		status_label.text = "Giá: %d vàng" % price
 		action_button.text = "Mua nhân vật"
 		action_button.disabled = GameData.gold < price
+		_style_lobby_button(action_button, true)
 	balance_label.text = "Vàng: %d" % GameData.gold
 
 func _show_previous_character() -> void:

@@ -26,9 +26,13 @@ const TALENT_ICON_COLORS := {
 @onready var title_label: Label = $MarginContainer/VBoxContainer/Header/Title
 
 var pets_container: VBoxContainer
+var talents_tab_button: Button
+var pets_tab_button: Button
+var showing_pets_tab: bool = false
 
 func _ready() -> void:
 	btn_back.pressed.connect(_on_back_pressed)
+	_style_shop_action_button(btn_back, Vector2(110.0, 40.0))
 	GameData.gold_changed.connect(_on_gold_changed)
 	_create_shop_tabs()
 	_update_gold_label()
@@ -41,15 +45,16 @@ func _create_shop_tabs() -> void:
 	$MarginContainer/VBoxContainer.add_child(tabs)
 	$MarginContainer/VBoxContainer.move_child(tabs, scroll_container.get_index())
 
-	var talents_button := Button.new()
-	talents_button.text = "Nâng cấp"
-	talents_button.pressed.connect(_show_talents_tab)
-	tabs.add_child(talents_button)
+	talents_tab_button = Button.new()
+	talents_tab_button.text = "NÂNG CẤP"
+	talents_tab_button.pressed.connect(_show_talents_tab)
+	tabs.add_child(talents_tab_button)
 
-	var pets_button := Button.new()
-	pets_button.text = "Pet"
-	pets_button.pressed.connect(_show_pets_tab)
-	tabs.add_child(pets_button)
+	pets_tab_button = Button.new()
+	pets_tab_button.text = "THÚ CƯNG"
+	pets_tab_button.pressed.connect(_show_pets_tab)
+	tabs.add_child(pets_tab_button)
+	_refresh_shop_tabs()
 
 	pets_container = VBoxContainer.new()
 	pets_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -58,14 +63,68 @@ func _create_shop_tabs() -> void:
 	pets_container.hide()
 
 func _show_talents_tab() -> void:
+	showing_pets_tab = false
 	items_container.show()
 	pets_container.hide()
 	title_label.text = "CỬA HÀNG NÂNG CẤP VĨNH VIỄN"
+	_refresh_shop_tabs()
 
 func _show_pets_tab() -> void:
+	showing_pets_tab = true
 	items_container.hide()
 	pets_container.show()
 	title_label.text = "CỬA HÀNG PET"
+	_refresh_shop_tabs()
+
+func _refresh_shop_tabs() -> void:
+	if is_instance_valid(talents_tab_button):
+		_style_shop_tab(talents_tab_button, not showing_pets_tab)
+	if is_instance_valid(pets_tab_button):
+		_style_shop_tab(pets_tab_button, showing_pets_tab)
+
+func _style_shop_tab(button: Button, is_active: bool) -> void:
+	button.custom_minimum_size = Vector2(156.0, 46.0)
+	_style_shop_button(button, is_active)
+
+func _style_shop_action_button(button: Button, minimum_size: Vector2) -> void:
+	button.custom_minimum_size = minimum_size
+	_style_shop_button(button, false)
+
+func _style_shop_button(button: Button, is_active: bool) -> void:
+	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_color_override("font_color", Color(0.82, 0.79, 0.7))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.82))
+	button.add_theme_color_override("font_pressed_color", Color(1.0, 0.98, 0.9))
+	button.add_theme_color_override("font_disabled_color", Color(0.57, 0.55, 0.49))
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.075, 0.105, 0.12, 0.98) if not is_active else Color(0.34, 0.23, 0.09, 1.0)
+	normal.border_color = Color(0.25, 0.38, 0.39, 1.0) if not is_active else Color(1.0, 0.75, 0.25, 1.0)
+	normal.set_border_width_all(2 if is_active else 1)
+	normal.set_corner_radius_all(8)
+	normal.content_margin_left = 18
+	normal.content_margin_right = 18
+	normal.shadow_color = Color(0.0, 0.0, 0.0, 0.35)
+	normal.shadow_size = 4
+	button.add_theme_stylebox_override("normal", normal)
+
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.15, 0.22, 0.22, 1.0) if not is_active else Color(0.48, 0.33, 0.11, 1.0)
+	hover.border_color = Color(0.52, 0.72, 0.65, 1.0) if not is_active else Color(1.0, 0.88, 0.48, 1.0)
+	hover.shadow_size = 6
+	button.add_theme_stylebox_override("hover", hover)
+
+	var pressed := hover.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color(0.045, 0.075, 0.08, 1.0) if not is_active else Color(0.24, 0.16, 0.055, 1.0)
+	pressed.shadow_size = 2
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("focus", hover)
+
+	var disabled := normal.duplicate() as StyleBoxFlat
+	disabled.bg_color = Color(0.055, 0.06, 0.065, 0.9)
+	disabled.border_color = Color(0.25, 0.25, 0.24, 0.8)
+	disabled.shadow_size = 0
+	button.add_theme_stylebox_override("disabled", disabled)
 
 func _update_gold_label() -> void:
 	gold_label.text = "🪙 Vàng: %d" % GameData.gold
@@ -122,7 +181,7 @@ func _build_pet_items() -> void:
 		details.add_child(description)
 
 		var action_button := Button.new()
-		action_button.custom_minimum_size = Vector2(170.0, 44.0)
+		_style_shop_action_button(action_button, Vector2(170.0, 44.0))
 		row.add_child(action_button)
 
 		if GameData.is_pet_unlocked(pet_id):
@@ -208,7 +267,7 @@ func _build_talent_items() -> void:
 		text_vbox.add_child(desc_lbl)
 		
 		var buy_btn = Button.new()
-		buy_btn.custom_minimum_size = Vector2(130, 42)
+		_style_shop_action_button(buy_btn, Vector2(150, 42))
 		if is_max:
 			buy_btn.text = "Tối Đa"
 			buy_btn.disabled = true

@@ -99,7 +99,9 @@ func _on_continue_requested(should_continue: bool) -> void:
 	if should_continue:
 		call_deferred("_advance_run")
 	else:
-		get_tree().quit()
+		var error := get_tree().change_scene_to_file("res://scenes/levels/main_menu.tscn")
+		if error != OK:
+			push_error("Cannot return to the main menu: %s" % error_string(error))
 
 func _advance_run() -> void:
 	var player := get_tree().get_first_node_in_group("player")

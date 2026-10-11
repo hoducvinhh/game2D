@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const WIN_SOUND: AudioStream = preload("res://assets/music/win.mp3")
+
 @onready var btn_replay: Button = $UIContainer/PanelContainer/MarginContainer/VBoxContainer/VBoxContainerButtons/BtnReplay
 @onready var btn_home: Button = $UIContainer/PanelContainer/MarginContainer/VBoxContainer/VBoxContainerButtons/BtnHome
 @onready var btn_settings: Button = $UIContainer/PanelContainer/MarginContainer/VBoxContainer/VBoxContainerButtons/BtnSettings
@@ -13,8 +15,8 @@ func _ready() -> void:
 	btn_home.pressed.connect(_on_home_pressed)
 	btn_settings.pressed.connect(_on_settings_pressed)
 	
-	# Tự động phát âm thanh chiến thắng ngay khi bảng Win hiện lên
 	if audio_player:
+		audio_player.stream = WIN_SOUND
 		audio_player.play()
 
 func _on_replay_pressed() -> void:

@@ -39,29 +39,29 @@ func _ready() -> void:
 		tween.finished.connect(_on_loading_complete)
 
 func _setup_texture_button_feedback(button: TextureButton) -> void:
-		button.pivot_offset = button.size * 0.5
-		button.mouse_entered.connect(_animate_texture_button.bind(button, 1.06, Color(1.12, 1.08, 0.94)))
-		button.mouse_exited.connect(_animate_texture_button.bind(button, 1.0, Color.WHITE))
-		button.button_down.connect(_animate_texture_button.bind(button, 0.94, Color(0.92, 0.88, 0.78)))
-		button.button_up.connect(func():
-			if is_instance_valid(button):
-				var target_scale := 1.06 if button.is_hovered() else 1.0
-				var target_modulate := Color(1.12, 1.08, 0.94) if button.is_hovered() else Color.WHITE
-				_animate_texture_button(button, target_scale, target_modulate)
-		)
+	button.pivot_offset = button.size * 0.5
+	button.mouse_entered.connect(_animate_texture_button.bind(button, 1.06, Color(1.12, 1.08, 0.94)))
+	button.mouse_exited.connect(_animate_texture_button.bind(button, 1.0, Color.WHITE))
+	button.button_down.connect(_animate_texture_button.bind(button, 0.94, Color(0.92, 0.88, 0.78)))
+	button.button_up.connect(func():
+		if is_instance_valid(button):
+			var target_scale := 1.06 if button.is_hovered() else 1.0
+			var target_modulate := Color(1.12, 1.08, 0.94) if button.is_hovered() else Color.WHITE
+			_animate_texture_button(button, target_scale, target_modulate)
+	)
 
 func _animate_texture_button(button: TextureButton, target_scale: float, target_modulate: Color) -> void:
-		var button_id := button.get_instance_id()
-		if menu_button_tweens.has(button_id):
-			var previous_tween: Tween = menu_button_tweens[button_id]
-			if previous_tween.is_valid():
-				previous_tween.kill()
+	var button_id := button.get_instance_id()
+	if menu_button_tweens.has(button_id):
+		var previous_tween: Tween = menu_button_tweens[button_id]
+		if previous_tween.is_valid():
+			previous_tween.kill()
 
-		var tween := create_tween().set_parallel(true)
-		tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tween.tween_property(button, "scale", Vector2.ONE * target_scale, 0.14)
-		tween.tween_property(button, "modulate", target_modulate, 0.14)
-		menu_button_tweens[button_id] = tween
+	var tween := create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", Vector2.ONE * target_scale, 0.14)
+	tween.tween_property(button, "modulate", target_modulate, 0.14)
+	menu_button_tweens[button_id] = tween
 
 func _style_loading_bar() -> void:
 	progress_bar.show_percentage = false

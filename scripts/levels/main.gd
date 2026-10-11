@@ -43,6 +43,7 @@ func _ready() -> void:
 	_create_enemy_minimap()
 	_create_player_status_hud()
 	_create_quest_tracker()
+	_create_return_to_lobby_button()
 
 func _create_companion_pet() -> void:
 	if not is_instance_valid(player):
@@ -69,9 +70,55 @@ func _process(_delta: float) -> void:
 
 func _create_quest_tracker() -> void:
 	var tracker = preload("res://scripts/ui/quest_tracker.gd").new()
-	tracker.position = Vector2(900, 75)
+	tracker.anchor_left = 1.0
+	tracker.anchor_right = 1.0
+	tracker.offset_left = -440.0
+	tracker.offset_right = -200.0
+	tracker.offset_top = 75.0
+	tracker.offset_bottom = 170.0
 	$CanvasLayer.add_child(tracker)
 	$Node2D/EnemySpawner.call("bind_quest_tracker", tracker)
+
+func _create_return_to_lobby_button() -> void:
+	var button := Button.new()
+	button.name = "ReturnToLobbyButton"
+	button.text = "VỀ SẢNH"
+	button.tooltip_text = "Thoát trận và quay về menu chính"
+	button.anchor_left = 1.0
+	button.anchor_right = 1.0
+	button.offset_left = -180.0
+	button.offset_right = -16.0
+	button.offset_top = 76.0
+	button.offset_bottom = 118.0
+	button.add_theme_font_size_override("font_size", 15)
+	button.add_theme_color_override("font_color", Color(1.0, 0.94, 0.78))
+	button.add_theme_color_override("font_hover_color", Color.WHITE)
+	button.add_theme_color_override("font_pressed_color", Color(1.0, 0.88, 0.57))
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.075, 0.105, 0.12, 0.98)
+	normal.border_color = Color(0.8, 0.61, 0.25, 1.0)
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(8)
+	normal.shadow_color = Color(0.0, 0.0, 0.0, 0.4)
+	normal.shadow_size = 4
+	button.add_theme_stylebox_override("normal", normal)
+
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.32, 0.19, 0.09, 1.0)
+	hover.border_color = Color(1.0, 0.85, 0.42, 1.0)
+	hover.shadow_size = 6
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("focus", normal)
+	button.pressed.connect(_on_return_to_lobby_pressed)
+	$CanvasLayer.add_child(button)
+
+func _on_return_to_lobby_pressed() -> void:
+	get_tree().paused = false
+	var error := get_tree().change_scene_to_file("res://scenes/levels/main_menu.tscn")
+	if error != OK:
+		push_error("Cannot return to the main menu: %s" % error_string(error))
 
 func _create_enemy_minimap() -> void:
 	var minimap = preload("res://scripts/ui/enemy_minimap.gd").new()
