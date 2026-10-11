@@ -7,7 +7,7 @@ class_name CompanionPet
 @export var animation_frame_step: float = 169.0
 @export var animation_fps: float = 7.0
 
-var player: Node2D = null
+var player: CharacterBody2D = null
 var target_pickup: Node2D = null
 var search_timer: float = 0.0
 var animation_timer: float = 0.0
@@ -19,14 +19,18 @@ var animation_base_rect: Rect2
 func _ready() -> void:
 	add_to_group("allies")
 	add_to_group("companion_pet")
-	player = get_tree().get_first_node_in_group("player")
+	player = get_tree().get_first_node_in_group("player") as CharacterBody2D
 	if sprite:
 		animation_base_rect = sprite.region_rect
 
 func _physics_process(delta: float) -> void:
-	_update_animation(delta)
 	if not is_instance_valid(player):
-		player = get_tree().get_first_node_in_group("player")
+		player = get_tree().get_first_node_in_group("player") as CharacterBody2D
+	if is_instance_valid(player):
+		_update_animation(delta, player.velocity.length_squared() > 1.0)
+	else:
+		_update_animation(delta, false)
+	if not is_instance_valid(player):
 		return
 		
 	# Tìm vật phẩm xung quanh mỗi 0.35 giây
@@ -59,10 +63,10 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity = Vector2.ZERO
 
-func _update_animation(delta: float) -> void:
+func _update_animation(delta: float, is_player_moving: bool) -> void:
 	if not sprite:
 		return
-	if velocity.length_squared() > 1.0:
+	if is_player_moving:
 		animation_timer += delta
 		if animation_timer >= 1.0 / animation_fps:
 			animation_timer = 0.0

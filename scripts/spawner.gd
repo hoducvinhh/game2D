@@ -4,7 +4,6 @@ var basic_enemy_scene: PackedScene = load("res://scenes/enemies/enemy.tscn")
 var fast_enemy_scene: PackedScene = load("res://scenes/enemies/fast_enemy.tscn")
 var ranged_enemy_scene: PackedScene = load("res://scenes/enemies/ranged_enemy.tscn")
 var boss_scene: PackedScene = load("res://scenes/enemies/boss.tscn")
-var pet_scene: PackedScene = load("res://scenes/characters/companion_pet.tscn")
 
 @onready var timer: Timer = $Timer
 
@@ -22,7 +21,6 @@ enum RunPhase { MAP, TRANSITION, BOSS }
 var phase: RunPhase = RunPhase.MAP
 var map_index: int = 0
 var map_time_elapsed: float = 0.0
-var pet_spawn_pending: bool = false
 var awaiting_continue_confirmation: bool = false
 
 func _ready() -> void:
@@ -33,7 +31,6 @@ func _ready() -> void:
 	timer.timeout.connect(_on_timer_timeout)
 	timer.stop()
 	_apply_difficulty_settings()
-	call_deferred("_spawn_companion_pet")
 
 func _apply_difficulty_settings() -> void:
 	var difficulty: Dictionary = GameData.DIFFICULTIES.get(
@@ -129,30 +126,6 @@ func _clear_stage_entities() -> void:
 	for bullet in get_tree().get_nodes_in_group("enemy_bullets"):
 		if is_instance_valid(bullet):
 			bullet.queue_free()
-
-func _spawn_companion_pet() -> void:
-	if pet_spawn_pending:
-		return
-	pet_spawn_pending = true
-	for attempt in range(10):
-		var player := get_tree().get_first_node_in_group("player") as Node2D
-		if is_instance_valid(player):
-			var existing_pet := get_tree().get_first_node_in_group("companion_pet")
-			if is_instance_valid(existing_pet):
-				pet_spawn_pending = false
-				return
-			if not pet_scene:
-				push_error("Cannot spawn companion pet: pet scene is missing")
-				pet_spawn_pending = false
-				return
-			var pet := pet_scene.instantiate() as Node2D
-			get_tree().current_scene.add_child(pet)
-			pet.global_position = player.global_position + Vector2(-120.0, 20.0)
-			pet_spawn_pending = false
-			return
-		await get_tree().process_frame
-	push_error("Cannot spawn companion pet: player was not ready")
-	pet_spawn_pending = false
 
 func _spawn_boss() -> void:
 	var player := get_tree().get_first_node_in_group("player") as Node2D

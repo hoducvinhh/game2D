@@ -1,5 +1,7 @@
 extends Node2D
 
+const COMPANION_PET_SCENE: PackedScene = preload("res://scenes/characters/companion_pet.tscn")
+
 @onready var player: CharacterBody2D = $CharacterBody2D/Player # Hoặc $Player tùy cây node của bạn
 @onready var level_up_menu: Control = $CanvasLayer/LevelUpMenu
 @onready var gold_label: Label = $CanvasLayer/GoldLabel
@@ -30,6 +32,7 @@ func _ready() -> void:
 		var overhead_health_bar := player.get_node_or_null("HealthBar")
 		if overhead_health_bar:
 			overhead_health_bar.hide()
+	_create_companion_pet()
 	if player and level_up_menu:
 		player.player_leveled_up.connect(_on_player_leveled_up)
 		player.weapons_changed.connect(_refresh_weapons_hud)
@@ -39,6 +42,24 @@ func _ready() -> void:
 	_create_enemy_minimap()
 	_create_player_status_hud()
 	_create_quest_tracker()
+
+func _create_companion_pet() -> void:
+	if not is_instance_valid(player):
+		push_error("Cannot spawn companion pet: player was not found in the main scene")
+		return
+
+	var existing_pet := get_tree().get_first_node_in_group("companion_pet")
+	if is_instance_valid(existing_pet):
+		return
+
+	var pet := COMPANION_PET_SCENE.instantiate() as Node2D
+	if not pet:
+		push_error("Cannot spawn companion pet: pet scene root must be a Node2D")
+		return
+
+	add_child(pet)
+	pet.global_position = player.global_position + Vector2(-72.0, 20.0)
+	pet.visible = true
 
 func _process(_delta: float) -> void:
 	_update_weapon_cooldowns()
