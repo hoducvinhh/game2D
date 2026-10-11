@@ -2,6 +2,9 @@ extends CharacterBody2D
 class_name BaseEnemy
 
 const ENEMY_BULLET_SCENE: PackedScene = preload("res://scenes/enemies/enemy_bullet.tscn")
+const MIN_PROJECTILE_ATTACK_GAP_USEC: int = 400_000
+
+static var _next_projectile_attack_time_usec: int = 0
 
 @export var speed: float = 120.0
 @export var damage: int = 10
@@ -45,6 +48,7 @@ var projectile_timer: float = 1.5
 func _ready() -> void:
 	add_to_group("enemies")
 	health = max_health
+	projectile_timer = randf_range(0.5, maxf(0.5, projectile_cooldown))
 	player = get_tree().get_first_node_in_group("player")
 	if sprite:
 		original_scale = sprite.scale
@@ -66,9 +70,17 @@ func _process(delta: float) -> void:
 	if is_dead or is_fearing or not is_instance_valid(player) or not projectile_texture:
 		return
 	projectile_timer -= delta
-	if projectile_timer <= 0.0:
+	if projectile_timer <= 0.0 and _claim_projectile_attack_slot():
 		_fire_projectile()
-		projectile_timer = projectile_cooldown
+		projectile_timer = projectile_cooldown * randf_range(0.85, 1.15)
+
+static func _claim_projectile_attack_slot() -> bool:
+	var now_usec := Time.get_ticks_usec()
+	if now_usec < _next_projectile_attack_time_usec:
+		return false
+
+	_next_projectile_attack_time_usec = now_usec + MIN_PROJECTILE_ATTACK_GAP_USEC
+	return true
 
 func _fire_projectile() -> void:
 	if not is_instance_valid(player):
@@ -159,6 +171,8 @@ func take_damage(amount: int) -> void:
 	if is_dead:
 		return
 		
+	var actual_damage := mini(maxi(amount, 0), health)
+	GameData.record_run_damage_dealt(actual_damage)
 	health -= amount
 	health = clamp(health, 0, max_health)
 	

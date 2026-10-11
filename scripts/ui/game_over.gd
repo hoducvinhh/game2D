@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 const LOSS_SOUND: AudioStream = preload("res://assets/music/loss.mp3")
+const RUN_SUMMARY = preload("res://scripts/ui/run_summary.gd")
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -17,7 +18,7 @@ func _ready() -> void:
 	add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(420, 240)
+	panel.custom_minimum_size = Vector2(520, 0)
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.09, 0.075, 0.07, 0.98)
 	panel_style.border_color = Color(0.78, 0.22, 0.16)
@@ -47,6 +48,7 @@ func _ready() -> void:
 	message.add_theme_font_size_override("font_size", 18)
 	message.add_theme_color_override("font_color", Color(0.9, 0.87, 0.82))
 	content.add_child(message)
+	content.add_child(RUN_SUMMARY.create_panel())
 
 	var replay_button := Button.new()
 	replay_button.text = "Chơi lại"

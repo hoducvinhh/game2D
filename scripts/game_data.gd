@@ -158,6 +158,14 @@ var current_run_map_id: String = ""
 var selected_difficulty_id: String = "hard"
 var completed_runs: Array[Dictionary] = []
 var achievement_progress: Dictionary = {"kills": 0, "gold": 0, "completed_maps": [], "unlocked": []}
+var current_run_stats: Dictionary = {
+	"time_seconds": 0.0,
+	"kills": 0,
+	"damage_dealt": 0,
+	"damage_received": 0,
+	"gold_collected": 0,
+	"upgrades": []
+}
 var touch_controls_enabled: bool = true
 var master_volume: float = 1.0
 var lobby_music_volume: float = 1.0
@@ -241,6 +249,7 @@ func get_gold_drop_chance(base_chance: float) -> float:
 
 func record_enemy_kill() -> void:
 	achievement_progress["kills"] = int(achievement_progress.get("kills", 0)) + 1
+	current_run_stats["kills"] = int(current_run_stats.get("kills", 0)) + 1
 	if achievement_progress["kills"] >= ACHIEVEMENTS["first_blood"]["target"]:
 		_unlock_achievement("first_blood")
 	_save_profile()
@@ -249,9 +258,34 @@ func record_gold_collected(amount: int) -> void:
 	if amount <= 0:
 		return
 	achievement_progress["gold"] = int(achievement_progress.get("gold", 0)) + amount
+	current_run_stats["gold_collected"] = int(current_run_stats.get("gold_collected", 0)) + amount
 	if achievement_progress["gold"] >= ACHIEVEMENTS["gold_collector"]["target"]:
 		_unlock_achievement("gold_collector")
 	_save_profile()
+
+func reset_run_stats() -> void:
+	current_run_stats = {
+		"time_seconds": 0.0,
+		"kills": 0,
+		"damage_dealt": 0,
+		"damage_received": 0,
+		"gold_collected": 0,
+		"upgrades": []
+	}
+
+func record_run_time(delta: float) -> void:
+	current_run_stats["time_seconds"] = float(current_run_stats.get("time_seconds", 0.0)) + maxf(delta, 0.0)
+
+func record_run_damage_dealt(amount: int) -> void:
+	current_run_stats["damage_dealt"] = int(current_run_stats.get("damage_dealt", 0)) + maxi(amount, 0)
+
+func record_run_damage_received(amount: int) -> void:
+	current_run_stats["damage_received"] = int(current_run_stats.get("damage_received", 0)) + maxi(amount, 0)
+
+func record_run_upgrade(title: String) -> void:
+	var upgrades: Array = current_run_stats.get("upgrades", [])
+	upgrades.append(title)
+	current_run_stats["upgrades"] = upgrades
 
 func record_boss_defeated() -> void:
 	_unlock_achievement("boss_slayer")

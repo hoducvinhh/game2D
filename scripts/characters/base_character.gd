@@ -36,7 +36,10 @@ func take_damage(amount: int) -> void:
 	if is_dead or is_invincible:
 		return
 		
+	var previous_health := health
 	health = clamp(health - amount, 0, max_health)
+	if is_in_group("player"):
+		GameData.record_run_damage_received(previous_health - health)
 	update_health_ui()
 	
 	if health <= 0:

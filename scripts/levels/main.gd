@@ -24,6 +24,7 @@ const WEAPON_HUD_ITEMS := [
 
 func _ready() -> void:
 	add_to_group("gameplay_scene")
+	GameData.reset_run_stats()
 	AudioManager.set_music_context(true)
 	_apply_selected_map()
 	_update_gold_label(GameData.gold)
@@ -67,7 +68,8 @@ func _create_companion_pet() -> void:
 	pet.global_position = player.global_position + Vector2(-72.0, 20.0)
 	pet.visible = true
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	GameData.record_run_time(delta)
 	_update_weapon_cooldowns()
 	_update_player_health_hud()
 
@@ -379,6 +381,7 @@ func _on_player_leveled_up(current_level: int) -> void:
 	level_up_menu.show_options(current_level)
 
 func _on_upgrade_selected(chosen_data: Dictionary) -> void:
+	GameData.record_run_upgrade(str(chosen_data.get("title", chosen_data.get("id", "Nâng cấp"))))
 	if player:
 		player.apply_upgrade(chosen_data)
 
