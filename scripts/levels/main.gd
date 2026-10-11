@@ -7,6 +7,7 @@ const COMPANION_SNAKE_SCENE: PackedScene = preload("res://scenes/characters/comp
 @onready var level_up_menu: Control = $CanvasLayer/LevelUpMenu
 @onready var gold_label: Label = $CanvasLayer/GoldLabel
 @onready var exp_bar: ProgressBar = $CanvasLayer/EXPBar
+@onready var pause_menu: PauseMenu = $PauseMenu
 var weapons_row: HBoxContainer
 var weapon_slots: Dictionary = {}
 var map_hazard: Node2D
@@ -81,9 +82,9 @@ func _create_quest_tracker() -> void:
 
 func _create_return_to_lobby_button() -> void:
 	var button := Button.new()
-	button.name = "ReturnToLobbyButton"
-	button.text = "VỀ SẢNH"
-	button.tooltip_text = "Thoát trận và quay về menu chính"
+	button.name = "InGameSettingsButton"
+	button.text = "CÀI ĐẶT"
+	button.tooltip_text = "Tạm dừng, chỉnh âm thanh hoặc về sảnh"
 	button.anchor_left = 1.0
 	button.anchor_right = 1.0
 	button.offset_left = -180.0
@@ -111,14 +112,8 @@ func _create_return_to_lobby_button() -> void:
 	button.add_theme_stylebox_override("hover", hover)
 	button.add_theme_stylebox_override("pressed", hover)
 	button.add_theme_stylebox_override("focus", normal)
-	button.pressed.connect(_on_return_to_lobby_pressed)
+	button.pressed.connect(pause_menu.open_settings_menu)
 	$CanvasLayer.add_child(button)
-
-func _on_return_to_lobby_pressed() -> void:
-	get_tree().paused = false
-	var error := get_tree().change_scene_to_file("res://scenes/levels/main_menu.tscn")
-	if error != OK:
-		push_error("Cannot return to the main menu: %s" % error_string(error))
 
 func _create_enemy_minimap() -> void:
 	var minimap = preload("res://scripts/ui/enemy_minimap.gd").new()

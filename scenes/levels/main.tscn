@@ -6,8 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://c4nrchkh2de5u" path="res://scenes/EnemySpawner.tscn" id="3_vkq25"]
 [ext_resource type="Script" uid="uid://elyx4mmrv705" path="res://scripts/exp_bar.gd" id="4_7lrji"]
 [ext_resource type="PackedScene" uid="uid://csk0nx30ie4gh" path="res://scenes/level_up_menu.tscn" id="5_rssyh"]
-[ext_resource type="AudioStream" uid="uid://djratn6eedvsb" path="res://assets/music/background_music.ogg" id="6_hwp66"]
-[ext_resource type="Script" uid="uid://danfqqpcvoiah" path="res://scenes/levels/sound_toggle.gd" id="7_vkq25"]
 [ext_resource type="Script" uid="uid://dcbmttcdbtk7j" path="res://scenes/levels/danger_zone.gd" id="9_rssyh"]
 [ext_resource type="AudioStream" uid="uid://bfrvekgaunwee" path="res://scenes/levels/hieu_ung_am_thanh_An_tuong-www_tiengdong_com.mp3" id="10_hwp66"]
 [ext_resource type="Script" uid="uid://g53381nb5vhv" path="res://scripts/survival_manager.gd" id="11_hwp66"]
@@ -54,19 +52,6 @@ theme_override_font_sizes/font_size = 20
 text = "Vàng: 0"
 
 [node name="LevelUpMenu" parent="CanvasLayer" unique_id=1428408615 instance=ExtResource("5_rssyh")]
-
-[node name="SoundToggle" type="CheckButton" parent="CanvasLayer" unique_id=559984116]
-offset_left = 1025.0
-offset_top = 33.0
-offset_right = 1154.0
-offset_bottom = 66.0
-text = "Âm thanh "
-script = ExtResource("7_vkq25")
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1209969161]
-stream = ExtResource("6_hwp66")
-autoplay = true
-bus = &"BG"
 
 [node name="DangerZone" type="Area2D" parent="." unique_id=1906583541]
 collision_layer = 7

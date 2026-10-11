@@ -160,13 +160,56 @@ var completed_runs: Array[Dictionary] = []
 var achievement_progress: Dictionary = {"kills": 0, "gold": 0, "completed_maps": [], "unlocked": []}
 var touch_controls_enabled: bool = true
 var master_volume: float = 1.0
+var lobby_music_volume: float = 1.0
+var game_music_volume: float = 1.0
+var sound_effects_volume: float = 1.0
 var settings_return_scene: String = "res://scenes/levels/main_menu.tscn"
 
 func _ready() -> void:
 	_load_profile()
-	var master_bus_index := AudioServer.get_bus_index("Master")
-	if master_bus_index >= 0:
-		AudioServer.set_bus_volume_db(master_bus_index, linear_to_db(maxf(master_volume, 0.001)))
+	apply_audio_settings()
+
+func apply_audio_settings() -> void:
+	_set_bus_volume(&"Master", master_volume)
+	_set_bus_volume(&"BG_LOBBY", lobby_music_volume)
+	_set_bus_volume(&"BG_GAME", game_music_volume)
+	_set_bus_volume(&"DR", sound_effects_volume)
+
+func set_audio_volume(bus_name: StringName, value: float) -> void:
+	var volume := clampf(value, 0.0, 1.0)
+	match bus_name:
+		&"Master":
+			master_volume = volume
+		&"BG_LOBBY":
+			lobby_music_volume = volume
+		&"BG_GAME":
+			game_music_volume = volume
+		&"DR":
+			sound_effects_volume = volume
+		_:
+			push_error("Unknown audio bus for volume setting: %s" % bus_name)
+			return
+	apply_audio_settings()
+	save_settings()
+
+func get_audio_volume(bus_name: StringName) -> float:
+	match bus_name:
+		&"Master":
+			return master_volume
+		&"BG_LOBBY":
+			return lobby_music_volume
+		&"BG_GAME":
+			return game_music_volume
+		&"DR":
+			return sound_effects_volume
+		_:
+			push_error("Unknown audio bus for volume setting: %s" % bus_name)
+			return 1.0
+
+func _set_bus_volume(bus_name: StringName, volume: float) -> void:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index >= 0:
+		AudioServer.set_bus_volume_db(bus_index, linear_to_db(maxf(volume, 0.001)))
 
 func add_gold(amount: int) -> void:
 	if amount <= 0:
@@ -383,6 +426,9 @@ func _load_profile() -> void:
 	achievement_progress["unlocked"] = achievement_progress["unlocked"].filter(func(id): return ACHIEVEMENTS.has(id))
 	touch_controls_enabled = bool(config.get_value("settings", "touch_controls_enabled", true))
 	master_volume = clampf(float(config.get_value("settings", "master_volume", 1.0)), 0.0, 1.0)
+	lobby_music_volume = clampf(float(config.get_value("settings", "lobby_music_volume", 1.0)), 0.0, 1.0)
+	game_music_volume = clampf(float(config.get_value("settings", "game_music_volume", 1.0)), 0.0, 1.0)
+	sound_effects_volume = clampf(float(config.get_value("settings", "sound_effects_volume", 1.0)), 0.0, 1.0)
 
 func _save_profile() -> void:
 	var config := ConfigFile.new()
@@ -400,6 +446,9 @@ func _save_profile() -> void:
 	config.set_value("achievements", "unlocked", achievement_progress.get("unlocked", []))
 	config.set_value("settings", "touch_controls_enabled", touch_controls_enabled)
 	config.set_value("settings", "master_volume", master_volume)
+	config.set_value("settings", "lobby_music_volume", lobby_music_volume)
+	config.set_value("settings", "game_music_volume", game_music_volume)
+	config.set_value("settings", "sound_effects_volume", sound_effects_volume)
 	for talent_id in talent_levels:
 		config.set_value("talents", talent_id, talent_levels[talent_id])
 	var save_error := config.save(SAVE_PATH)

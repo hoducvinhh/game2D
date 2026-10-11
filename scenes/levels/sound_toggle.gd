@@ -1,22 +1,17 @@
 extends CheckButton
 
+const MUSIC_BUSES: Array[StringName] = [&"BG_GAME", &"BG_LOBBY"]
+
 func _ready() -> void:
-	# Lấy vị trí của Audio Bus "BG" (Background Music)
-	var bg_bus = AudioServer.get_bus_index("BG")
-	
-	# Đồng bộ trạng thái ban đầu của nút với bus BG
-	button_pressed = !AudioServer.is_bus_mute(bg_bus) # CheckButton sáng là bật, nên ngược lại với mute
-	
-	# Lắng nghe sự kiện khi người dùng gạt công tắc
+	button_pressed = true
+	for bus_name in MUSIC_BUSES:
+		var bus_index := AudioServer.get_bus_index(bus_name)
+		if bus_index >= 0 and AudioServer.is_bus_mute(bus_index):
+			button_pressed = false
 	toggled.connect(_on_toggled)
 
-func _on_toggled(button_pressed: bool) -> void:
-	var bg_bus = AudioServer.get_bus_index("BG")
-	
-	# Nếu bật (true) thì mở nhạc nền BG (mute = false), nếu tắt thì mute = true
-	AudioServer.set_bus_mute(bg_bus, !button_pressed)
-	
-	if button_pressed:
-		print("Đã bật nhạc nền (BG)!")
-	else:
-		print("Đã tắt nhạc nền (BG)! Nhạc vùng cấm (DR) vẫn hoạt động.")
+func _on_toggled(enabled: bool) -> void:
+	for bus_name in MUSIC_BUSES:
+		var bus_index := AudioServer.get_bus_index(bus_name)
+		if bus_index >= 0:
+			AudioServer.set_bus_mute(bus_index, not enabled)

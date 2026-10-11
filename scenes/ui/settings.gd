@@ -6,16 +6,11 @@ extends Control
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	var master_bus_idx = AudioServer.get_bus_index("Master")
-	AudioServer.set_bus_volume_db(master_bus_idx, linear_to_db(maxf(GameData.master_volume, 0.001)))
-	
-	if master_slider:
-		master_slider.value = GameData.master_volume
-		master_slider.value_changed.connect(func(value: float):
-			GameData.master_volume = value
-			AudioServer.set_bus_volume_db(master_bus_idx, linear_to_db(maxf(value, 0.001)))
-			GameData.save_settings()
-		)
+	add_to_group("settings_overlay")
+	_configure_audio_slider(master_slider, &"Master")
+	_configure_audio_slider($CenterContainer/Panel/MarginContainer/Content/LobbyMusicSlider, &"BG_LOBBY")
+	_configure_audio_slider($CenterContainer/Panel/MarginContainer/Content/GameMusicSlider, &"BG_GAME")
+	_configure_audio_slider($CenterContainer/Panel/MarginContainer/Content/SoundEffectsSlider, &"DR")
 	
 	if touch_controls_check:
 		touch_controls_check.button_pressed = GameData.touch_controls_enabled
@@ -29,6 +24,18 @@ func _ready() -> void:
 
 	if btn_back:
 		btn_back.pressed.connect(_on_back_pressed)
+
+func _configure_audio_slider(slider: HSlider, bus_name: StringName) -> void:
+	slider.value = GameData.get_audio_volume(bus_name)
+	slider.value_changed.connect(_on_audio_slider_changed.bind(bus_name))
+
+func _on_audio_slider_changed(value: float, bus_name: StringName) -> void:
+	GameData.set_audio_volume(bus_name, value)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		get_viewport().set_input_as_handled()
+		_on_back_pressed()
 
 func _on_back_pressed() -> void:
 	if GameData.settings_return_scene.is_empty():
