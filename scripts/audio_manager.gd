@@ -3,6 +3,7 @@ extends Node
 const LOBBY_MUSIC: AudioStream = preload("res://assets/music/background_loppy.mp3")
 const GAME_MUSIC: AudioStream = preload("res://assets/music/background_music.ogg")
 const PLAYER_HIT_SOUND: AudioStream = preload("res://assets/music/player_hit.mp3")
+const BOSS_SOUND: AudioStream = preload("res://assets/music/sound-boss.mp3")
 const PLAYER_HIT_SOUND_INTERVAL_MS: int = 90
 
 var music_player: AudioStreamPlayer
@@ -69,3 +70,7 @@ func play_player_hit_sound() -> void:
 		return
 	last_player_hit_sound_ms = now_ms
 	play_sound(PLAYER_HIT_SOUND)
+
+func play_boss_sound() -> void:
+	music_player.stop()
+	play_sound(BOSS_SOUND)

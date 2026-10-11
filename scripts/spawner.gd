@@ -140,6 +140,7 @@ func _spawn_boss() -> void:
 		return
 	get_tree().current_scene.add_child(boss)
 	boss.global_position = player.global_position + Vector2.from_angle(randf() * TAU) * 1000.0
+	AudioManager.play_boss_sound()
 	print("[BOSS SPAWNED] Chúa Tể Hư Không đã xuất hiện!")
 
 func _on_timer_timeout() -> void:
