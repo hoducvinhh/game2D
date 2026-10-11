@@ -78,6 +78,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		var multiplier: float = player.get_damage_multiplier() if is_instance_valid(player) and player.has_method("get_damage_multiplier") else 1.0
 		body.take_damage(roundi(damage * multiplier))
+		AudioManager.play_player_hit_sound()
 		print("Đã gây ", damage, " sát thương lên quái: ", body.name)
 
 func upgrade() -> void:

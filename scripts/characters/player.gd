@@ -31,7 +31,6 @@ const ULTIMATE_DURATION: float = 5.0
 const ULTIMATE_BULLET_INTERVAL: float = 0.25
 const ULTIMATE_BULLETS_PER_VOLLEY: int = 8
 const SUGARCANE_BULLET_SCENE: PackedScene = preload("res://scenes/weapon/sugarcane_attack.tscn")
-
 signal exp_changed(current_exp: int, max_exp: int)
 signal player_leveled_up(current_level: int)
 signal weapons_changed
@@ -184,8 +183,10 @@ func perform_active_attack() -> void:
 					if "velocity" in enemy:
 						enemy.velocity += last_facing_dir * 260.0
 						
-	if hit_count > 0 and touch_controls:
-		touch_controls.add_rage(hit_count * 3.0)
+	if hit_count > 0:
+		AudioManager.play_player_hit_sound()
+		if touch_controls:
+			touch_controls.add_rage(hit_count * 3.0)
 
 func select_weapon(weapon_id: String) -> void:
 	if weapon_id.is_empty():

@@ -1,11 +1,14 @@
 extends Node
 
-const LOBBY_MUSIC: AudioStream = preload("res://assets/music/background_music.ogg")
+const LOBBY_MUSIC: AudioStream = preload("res://assets/music/background_loppy.mp3")
 const GAME_MUSIC: AudioStream = preload("res://assets/music/background_music.ogg")
+const PLAYER_HIT_SOUND: AudioStream = preload("res://assets/music/player_hit.mp3")
+const PLAYER_HIT_SOUND_INTERVAL_MS: int = 90
 
 var music_player: AudioStreamPlayer
 var current_music_context: StringName = &""
 var gameplay_paused: bool = false
+var last_player_hit_sound_ms: int = -PLAYER_HIT_SOUND_INTERVAL_MS
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -24,14 +27,20 @@ func _sync_music_with_scene() -> void:
 	if not is_instance_valid(scene):
 		return
 
-	var is_gameplay := scene.scene_file_path == "res://scenes/levels/main.tscn"
+	var is_gameplay := scene.is_in_group("gameplay_scene") or scene.scene_file_path == "res://scenes/levels/main.tscn"
+	set_music_context(is_gameplay)
+
+func set_music_context(is_gameplay: bool) -> void:
 	var next_context: StringName = &"game" if is_gameplay else &"lobby"
-	if current_music_context == next_context and music_player.playing:
+	var next_stream: AudioStream = GAME_MUSIC if is_gameplay else LOBBY_MUSIC
+	var next_bus: StringName = &"BG_GAME" if is_gameplay else &"BG_LOBBY"
+	if current_music_context == next_context and music_player.playing and music_player.stream == next_stream and music_player.bus == next_bus:
 		return
 
 	current_music_context = next_context
-	music_player.stream = GAME_MUSIC if is_gameplay else LOBBY_MUSIC
-	music_player.bus = &"BG_GAME" if is_gameplay else &"BG_LOBBY"
+	music_player.stop()
+	music_player.stream = next_stream
+	music_player.bus = next_bus
 	music_player.stream_paused = is_gameplay and gameplay_paused
 	music_player.play()
 
@@ -53,3 +62,10 @@ func play_sound(stream: AudioStream, bus_name: StringName = &"DR") -> void:
 	add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()
+
+func play_player_hit_sound() -> void:
+	var now_ms := Time.get_ticks_msec()
+	if now_ms - last_player_hit_sound_ms < PLAYER_HIT_SOUND_INTERVAL_MS:
+		return
+	last_player_hit_sound_ms = now_ms
+	play_sound(PLAYER_HIT_SOUND)

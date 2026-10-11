@@ -23,6 +23,8 @@ const WEAPON_HUD_ITEMS := [
 ]
 
 func _ready() -> void:
+	add_to_group("gameplay_scene")
+	AudioManager.set_music_context(true)
 	_apply_selected_map()
 	_update_gold_label(GameData.gold)
 	GameData.gold_changed.connect(_update_gold_label)

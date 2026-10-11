@@ -82,7 +82,12 @@ func _on_settings_pressed() -> void:
 	GameData.settings_return_scene = ""
 	var settings: Node = load("res://scenes/ui/settings.tscn").instantiate()
 	settings.process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().current_scene.add_child(settings)
+	var game_canvas := get_tree().current_scene.get_node_or_null("CanvasLayer")
+	if not game_canvas:
+		push_error("Cannot open settings: the gameplay CanvasLayer was not found.")
+		show()
+		return
+	game_canvas.add_child(settings)
 
 func _on_menu_pressed() -> void:
 	get_tree().paused = false
