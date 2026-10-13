@@ -1,3 +1,5 @@
+# cái này dành cho game 3d ==>> bỏ qua cái này, khi nào chỉ đích danh đến file này thì mới dùng
+
 # BÁO CÁO TÓM TẮT ĐỒ ÁN
 
 ## Xây dựng game bắn zombie 3D trên nền tảng Android bằng Unity
@@ -6,15 +8,15 @@
 
 ## 1. Thông tin chung
 
-| Hạng mục | Nội dung |
-|---|---|
-| Tên đề tài | Xây dựng game bắn zombie 3D trên nền tảng Android |
-| Tên project | ZombieShooting |
-| Thể loại | FPS (bắn súng góc nhìn thứ nhất), sinh tồn, zombie |
-| Công cụ chính | Unity 6.0 (6000.6.5f1), C# |
-| Nền tảng mục tiêu | Android; cấu hình dự án cũng hỗ trợ chạy thử trên PC |
-| Scene chính | `MainMenu`, `testscene` |
-| Lưu trữ dữ liệu | `PlayerPrefs` trên thiết bị, không sử dụng máy chủ trực tuyến |
+| Hạng mục          | Nội dung                                                      |
+| ----------------- | ------------------------------------------------------------- |
+| Tên đề tài        | Xây dựng game bắn zombie 3D trên nền tảng Android             |
+| Tên project       | ZombieShooting                                                |
+| Thể loại          | FPS (bắn súng góc nhìn thứ nhất), sinh tồn, zombie            |
+| Công cụ chính     | Unity 6.0 (6000.6.5f1), C#                                    |
+| Nền tảng mục tiêu | Android; cấu hình dự án cũng hỗ trợ chạy thử trên PC          |
+| Scene chính       | `MainMenu`, `testscene`                                       |
+| Lưu trữ dữ liệu   | `PlayerPrefs` trên thiết bị, không sử dụng máy chủ trực tuyến |
 
 ## 2. Tóm tắt đề tài
 
@@ -81,16 +83,16 @@ flowchart TD
 
 ## 6. Kiến trúc các hệ thống
 
-| Hệ thống | Script tiêu biểu | Trách nhiệm |
-|---|---|---|
-| Điều khiển Player | `PlayerMovement`, `MouseLook`, `PlayerHealth` | Di chuyển, camera, máu, hồi máu và dùng health pack |
-| Điều khiển cảm ứng | `VirtualJoystick`, `TouchLookArea`, `MobileFireButton`, `MobileCombatControls` | Đọc joystick, thao tác ngắm và nối nút chiến đấu/menu với gameplay |
-| Vũ khí | `Gun`, `WeaponSwitcher` | Bắn bằng raycast, đạn trong băng, reload và chuyển vũ khí |
-| Zombie | `ZombieAI`, `ZombieHealth`, `ZombieSpawner` | AI theo trạng thái, máu/tiêu diệt và spawn theo wave |
-| Quản lý trận | `GameManager` | Credits, kills, wave, pause, game over, scene navigation và dữ liệu inventory |
-| Cửa hàng | `WeaponShop`, `ShopUI` | Catalog vũ khí, giao dịch, giá, trạng thái sở hữu và nhãn inventory |
-| Giao diện | `MainMenuController`, `UIManager` | Điều hướng menu, HUD, Pause, Shop và Game Over |
-| Âm thanh/hiệu ứng | `AudioManager`, `ImpactEffect` | Phát nhạc/âm thanh và hiệu ứng va chạm đạn |
+| Hệ thống           | Script tiêu biểu                                                               | Trách nhiệm                                                                   |
+| ------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Điều khiển Player  | `PlayerMovement`, `MouseLook`, `PlayerHealth`                                  | Di chuyển, camera, máu, hồi máu và dùng health pack                           |
+| Điều khiển cảm ứng | `VirtualJoystick`, `TouchLookArea`, `MobileFireButton`, `MobileCombatControls` | Đọc joystick, thao tác ngắm và nối nút chiến đấu/menu với gameplay            |
+| Vũ khí             | `Gun`, `WeaponSwitcher`                                                        | Bắn bằng raycast, đạn trong băng, reload và chuyển vũ khí                     |
+| Zombie             | `ZombieAI`, `ZombieHealth`, `ZombieSpawner`                                    | AI theo trạng thái, máu/tiêu diệt và spawn theo wave                          |
+| Quản lý trận       | `GameManager`                                                                  | Credits, kills, wave, pause, game over, scene navigation và dữ liệu inventory |
+| Cửa hàng           | `WeaponShop`, `ShopUI`                                                         | Catalog vũ khí, giao dịch, giá, trạng thái sở hữu và nhãn inventory           |
+| Giao diện          | `MainMenuController`, `UIManager`                                              | Điều hướng menu, HUD, Pause, Shop và Game Over                                |
+| Âm thanh/hiệu ứng  | `AudioManager`, `ImpactEffect`                                                 | Phát nhạc/âm thanh và hiệu ứng va chạm đạn                                    |
 
 Các script là logic gắn lên GameObject; UI được dựng trực tiếp trong Unity Editor và các tham chiếu được gán trong Inspector. Vì vậy, hiển thị và thao tác thực tế phụ thuộc vào việc hoàn tất wiring của scene.
 
@@ -118,15 +120,15 @@ flowchart LR
 
 ### 7.1 Mô tả dữ liệu chính
 
-| Dữ liệu | Nơi phát sinh/thay đổi | Nơi lưu hoặc sử dụng |
-|---|---|---|
-| Credits | Thưởng khi hạ zombie; trừ khi mua hàng | `GameManager`, khóa `PlayerMoney` trong PlayerPrefs, HUD và Shop |
-| Vũ khí đã mở khóa | Giao dịch mua vũ khí | Khóa `WeaponUnlocked_<tên vũ khí>` trong PlayerPrefs; catalog nạp vào WeaponHolder khi có Player |
-| Reserve ammo | Mua gói đạn; trừ khi reload | Khóa `ReserveAmmo`; `Gun` chuyển số đạn khả dụng vào băng |
-| Health pack | Mua pack; trừ khi sử dụng | Khóa `HealthPacks`; `PlayerHealth` dùng pack để hồi 50 HP |
-| Ammo trong băng | Bắn hoặc reload | Trường `currentAmmo` của vũ khí đang hoạt động; hiển thị trên HUD |
-| Máu Player | Bị zombie tấn công, tự hồi hoặc dùng pack | `PlayerHealth`; cập nhật thanh máu và xác định Game Over |
-| Kills / wave | Zombie bị hạ; spawner bắt đầu wave | `GameManager`; hiển thị trong HUD và Game Over |
+| Dữ liệu           | Nơi phát sinh/thay đổi                    | Nơi lưu hoặc sử dụng                                                                             |
+| ----------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Credits           | Thưởng khi hạ zombie; trừ khi mua hàng    | `GameManager`, khóa `PlayerMoney` trong PlayerPrefs, HUD và Shop                                 |
+| Vũ khí đã mở khóa | Giao dịch mua vũ khí                      | Khóa `WeaponUnlocked_<tên vũ khí>` trong PlayerPrefs; catalog nạp vào WeaponHolder khi có Player |
+| Reserve ammo      | Mua gói đạn; trừ khi reload               | Khóa `ReserveAmmo`; `Gun` chuyển số đạn khả dụng vào băng                                        |
+| Health pack       | Mua pack; trừ khi sử dụng                 | Khóa `HealthPacks`; `PlayerHealth` dùng pack để hồi 50 HP                                        |
+| Ammo trong băng   | Bắn hoặc reload                           | Trường `currentAmmo` của vũ khí đang hoạt động; hiển thị trên HUD                                |
+| Máu Player        | Bị zombie tấn công, tự hồi hoặc dùng pack | `PlayerHealth`; cập nhật thanh máu và xác định Game Over                                         |
+| Kills / wave      | Zombie bị hạ; spawner bắt đầu wave        | `GameManager`; hiển thị trong HUD và Game Over                                                   |
 
 `PlayerPrefs` là lưu trữ cục bộ của Unity. Đây không phải cơ sở dữ liệu online và dữ liệu có thể bị xóa khi người dùng xóa dữ liệu ứng dụng hoặc cài lại game.
 
