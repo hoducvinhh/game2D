@@ -19,12 +19,15 @@ script = ExtResource("1_keln3")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1432304950]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 3.0
-offset_top = 4.0
-offset_right = 1155.0
-offset_bottom = 651.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 texture = ExtResource("2_crctu")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="IntroImage" type="TextureRect" parent="." unique_id=1953077284]
 unique_name_in_owner = true
@@ -58,20 +61,28 @@ alignment = 1
 
 [node name="QuitButton" type="TextureButton" parent="." unique_id=2138926540]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 443.0
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -133.0
 offset_top = 430.0
-offset_right = 701.0
+offset_right = 125.0
 offset_bottom = 728.0
+grow_horizontal = 2
 texture_normal = ExtResource("4_cn35j")
 
 [node name="SettingsButton" type="TextureButton" parent="." unique_id=20628367]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 443.0
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -133.0
 offset_top = 340.0
-offset_right = 701.0
+offset_right = 125.0
 offset_bottom = 638.0
+grow_horizontal = 2
 texture_normal = ExtResource("5_wko7x")
 
 [node name="PlayButton" type="TextureButton" parent="." unique_id=941418325]
