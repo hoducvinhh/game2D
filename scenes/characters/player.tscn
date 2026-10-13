@@ -87,3 +87,26 @@ grow_vertical = 2
 [node name="Weapons" type="Node2D" parent="." unique_id=942515429]
 
 [node name="Sugarcane" parent="Weapons" unique_id=1139196063 instance=ExtResource("6_kqtwu")]
+
+[node name="HealthBar" type="ProgressBar" parent="." unique_id=1301625876]
+offset_left = -32.0
+offset_top = -74.0
+offset_right = 39.0
+offset_bottom = -55.0
+theme_override_styles/background = SubResource("StyleBoxFlat_qlg0r")
+theme_override_styles/fill = SubResource("StyleBoxFlat_tuyoq")
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="HealthBar" unique_id=2068089859]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Weapons" type="Node2D" parent="." unique_id=942515429]
+
+[node name="Sugarcane" parent="Weapons" unique_id=1139196063 instance=ExtResource("6_kqtwu")]

@@ -79,8 +79,8 @@ func _create_quest_tracker() -> void:
 	tracker.anchor_right = 1.0
 	tracker.offset_left = -440.0
 	tracker.offset_right = -200.0
-	tracker.offset_top = 75.0
-	tracker.offset_bottom = 170.0
+	tracker.offset_top = 10.0
+	tracker.offset_bottom = 105.0
 	$CanvasLayer.add_child(tracker)
 	$Node2D/EnemySpawner.call("bind_quest_tracker", tracker)
 
@@ -93,8 +93,8 @@ func _create_return_to_lobby_button() -> void:
 	button.anchor_right = 1.0
 	button.offset_left = -180.0
 	button.offset_right = -16.0
-	button.offset_top = 76.0
-	button.offset_bottom = 118.0
+	button.offset_top = 10.0
+	button.offset_bottom = 52.0
 	button.add_theme_font_size_override("font_size", 15)
 	button.add_theme_color_override("font_color", Color(1.0, 0.94, 0.78))
 	button.add_theme_color_override("font_hover_color", Color.WHITE)

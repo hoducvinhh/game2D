@@ -5,7 +5,7 @@ signal attack_pressed
 signal dash_pressed
 signal ultimate_pressed
 
-@export var max_joystick_radius: float = 65.0
+@export var max_joystick_radius: float = 85.0
 @export var is_dynamic_joystick: bool = false
 
 var joystick_center: Vector2 = Vector2.ZERO
@@ -54,10 +54,10 @@ func _update_layout() -> void:
 		root_control.size = vp_size
 		var joy = root_control.get_node_or_null("Joystick")
 		if joy:
-			joy.position = Vector2(40.0, vp_size.y - 180.0)
+			joy.position = Vector2(35.0, vp_size.y - 215.0)
 		var actions = root_control.get_node_or_null("Actions")
 		if actions:
-			actions.position = Vector2(vp_size.x - 260.0, vp_size.y - 220.0)
+			actions.position = Vector2(vp_size.x - 320.0, vp_size.y - 275.0)
 	if joystick_base:
 		joystick_center = joystick_base.global_position + joystick_base.size * 0.5
 		_reset_knob()
@@ -104,7 +104,7 @@ func _apply_custom_textures() -> void:
 		btn_ultimate.icon = load(ULTIMATE_ICON_PATH)
 		btn_ultimate.expand_icon = true
 		if ult_label:
-			ult_label.position.y = 20 # Dời chữ xuống dưới chân icon
+			ult_label.position.y = 26 # Dời chữ xuống dưới chân icon
 
 
 func _process(delta: float) -> void:
@@ -138,7 +138,7 @@ func _input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				var local_pos = event.position
-				if local_pos.x < 350 and local_pos.y > get_viewport().get_visible_rect().size.y - 350:
+				if local_pos.x < 400 and local_pos.y > get_viewport().get_visible_rect().size.y - 400:
 					touch_pointer_id = 999
 					_update_joystick(event.position)
 			else:
