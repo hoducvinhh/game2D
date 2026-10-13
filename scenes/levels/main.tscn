@@ -63,10 +63,11 @@ position = Vector2(918, 308.5)
 shape = SubResource("RectangleShape2D_sn8xv")
 
 [node name="ColorRect" type="ColorRect" parent="DangerZone" unique_id=1091293385]
-offset_left = 858.0
+color = Color(0.22, 0.72, 0.9, 0.1)
+offset_left = 853.0
 offset_top = 246.0
-offset_right = 974.0
-offset_bottom = 363.0
+offset_right = 983.0
+offset_bottom = 371.0
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="DangerZone" unique_id=151321416]
 stream = ExtResource("10_hwp66")

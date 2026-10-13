@@ -135,10 +135,20 @@ func _build_ui() -> void:
 	flexible_space.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	information.add_child(flexible_space)
 
+	var action_row := HBoxContainer.new()
+	action_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	information.add_child(action_row)
+	var action_spacer := Control.new()
+	action_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	action_row.add_child(action_spacer)
+
 	action_button = _make_button("Mua nhân vật")
-	action_button.custom_minimum_size = Vector2(0, 52)
+	action_button.custom_minimum_size = Vector2(220, 42)
 	action_button.pressed.connect(_on_action_pressed)
-	information.add_child(action_button)
+	action_row.add_child(action_button)
+	var action_spacer_right := Control.new()
+	action_spacer_right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	action_row.add_child(action_spacer_right)
 
 	var footer := HBoxContainer.new()
 	content.add_child(footer)

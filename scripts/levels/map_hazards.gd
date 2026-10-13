@@ -9,8 +9,10 @@ var spawn_timer: float = 3.0
 var warning_timer: float = 0.0
 var active_timer: float = 0.0
 var has_applied_effect: bool = false
+var visual_time: float = 0.0
 
 func _process(delta: float) -> void:
+	visual_time += delta
 	if hazard_type == "none" or not is_instance_valid(player):
 		return
 
@@ -56,9 +58,24 @@ func _apply_effect() -> void:
 
 func _draw() -> void:
 	if warning_timer > 0.0:
-		draw_circle(Vector2.ZERO, HAZARD_RADIUS, Color(0.9, 0.75, 0.2, 0.12))
-		draw_arc(Vector2.ZERO, HAZARD_RADIUS, 0.0, TAU, 48, Color(1.0, 0.82, 0.25, 0.9), 3.0)
+		var pulse := 0.5 + 0.5 * sin(visual_time * 7.0)
+		var warning_color := Color(1.0, 0.72, 0.2)
+		var radius := HAZARD_RADIUS - pulse * 3.0
+		draw_circle(Vector2.ZERO, radius, Color(warning_color, 0.1 + pulse * 0.06))
+		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 64, Color(warning_color, 0.7 + pulse * 0.3), 2.5, true)
+		draw_arc(Vector2.ZERO, radius * 0.78, -visual_time * 1.4, -visual_time * 1.4 + TAU * 0.72, 48, Color(1.0, 0.9, 0.55, 0.75), 1.5, true)
+		_draw_radial_ticks(radius, Color(1.0, 0.9, 0.55, 0.9), 12, visual_time * 0.25)
 	elif active_timer > 0.0:
-		var color := Color(0.35, 0.8, 1.0, 0.32) if hazard_type == "slow" else Color(0.8, 0.35, 1.0, 0.38)
-		draw_circle(Vector2.ZERO, HAZARD_RADIUS, color)
-		draw_arc(Vector2.ZERO, HAZARD_RADIUS, 0.0, TAU, 48, color.lightened(0.35), 3.0)
+		var pulse := 0.5 + 0.5 * sin(visual_time * 12.0)
+		var color := Color(0.18, 0.78, 1.0) if hazard_type == "slow" else Color(0.72, 0.32, 1.0)
+		var radius := HAZARD_RADIUS - pulse * 2.0
+		draw_circle(Vector2.ZERO, radius, Color(color, 0.2 + pulse * 0.1))
+		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 64, Color(color.lightened(0.35), 0.9), 3.0, true)
+		draw_arc(Vector2.ZERO, radius * (0.7 + pulse * 0.04), visual_time * 2.0, visual_time * 2.0 + TAU * 0.66, 48, Color(color.lightened(0.55), 0.8), 2.0, true)
+		_draw_radial_ticks(radius, Color(color.lightened(0.55), 0.9), 8, -visual_time * 0.2)
+
+func _draw_radial_ticks(radius: float, color: Color, tick_count: int, rotation: float) -> void:
+	for index in range(tick_count):
+		var angle := rotation + TAU * float(index) / tick_count
+		var direction := Vector2.from_angle(angle)
+		draw_line(direction * (radius - 6.0), direction * (radius + 2.0), color, 2.0, true)
