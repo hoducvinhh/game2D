@@ -4,11 +4,14 @@ extends Node2D
 var level: int = 1
 const MAX_LEVEL: int = 5
 var is_evolved: bool = false
+const DURATION: float = 10.0 # Duy trì vòng phòng thủ trong 10 giây rồi tự biến mất
+var remaining_duration: float = 0.0
 var cooldown_duration: float = 12.0
 var cooldown_remaining: float = 0.0
 
 @export var fear_duration: float = 2.5
 @export var fear_radius: float = 220.0 # Bán kính sóng âm phát ra
+var aura_tick_timer: float = 0.0
 
 const UPGRADE_DESCRIPTIONS = {
 	2: "Tăng 1 giây thời gian hoảng sợ",
@@ -17,13 +20,32 @@ const UPGRADE_DESCRIPTIONS = {
 	5: "Gây hoảng sợ cực đại (4 giây)"
 }
 
+func _ready() -> void:
+	visible = false # Mặc định ẩn, chỉ hiện khi kích hoạt phòng thủ
+
 func _process(delta: float) -> void:
 	cooldown_remaining = maxf(0.0, cooldown_remaining - delta)
+	if remaining_duration > 0.0:
+		remaining_duration = maxf(0.0, remaining_duration - delta)
+		rotation += 1.2 * delta
+		# Quét xua đuổi quái vật định kỳ khi vòng phòng thủ đang hoạt động
+		aura_tick_timer -= delta
+		if aura_tick_timer <= 0.0:
+			aura_tick_timer = 0.5
+			_scan_and_apply_fear()
+		if remaining_duration <= 0.0:
+			visible = false
+	else:
+		visible = false
 
 func activate() -> bool:
 	if cooldown_remaining > 0.0:
 		return false
-	cooldown_remaining = cooldown_duration
+	cooldown_remaining = DURATION + cooldown_duration
+	remaining_duration = DURATION
+	rotation = 0.0
+	visible = true
+	aura_tick_timer = 0.0
 	trigger_fear()
 	return true
 
@@ -32,7 +54,9 @@ func trigger_fear() -> void:
 	var tween = create_tween()
 	tween.tween_property(self, "scale", Vector2(1.3, 1.3), 0.08)
 	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.08)
+	_scan_and_apply_fear()
 
+func _scan_and_apply_fear() -> void:
 	# Quét trực tiếp danh sách quái trong group "enemies" mà không cần đợi physics frame
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for enemy in enemies:

@@ -31,8 +31,10 @@ func _process(delta: float) -> void:
 	if remaining_duration > 0.0:
 		remaining_duration = maxf(0.0, remaining_duration - delta)
 		rotation += 1.5 * delta
-		if remaining_duration == 0.0:
+		if remaining_duration <= 0.0:
 			visible = false
+	else:
+		visible = false
 
 func activate() -> bool:
 	if cooldown_remaining > 0.0:
