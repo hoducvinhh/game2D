@@ -13,6 +13,7 @@ var weapon_slots: Dictionary = {}
 var map_hazard: Node2D
 var player_health_bar: ProgressBar
 var player_health_label: Label
+var last_weapon_switch_time: float = 0.0
 
 const WEAPON_HUD_ITEMS := [
 	{"id": "Sugarcane", "name": "Bã mía", "icon": "res://assets/sprites/weapons/sugarcane/sugarcane.png"},
@@ -226,25 +227,25 @@ func _create_weapons_hud() -> void:
 	panel.anchor_right = 0.5
 	panel.anchor_top = 1.0
 	panel.anchor_bottom = 1.0
-	panel.offset_left = -124.0
-	panel.offset_right = 124.0
-	panel.offset_top = -58.0
-	panel.offset_bottom = -6.0
+	panel.offset_left = -155.0
+	panel.offset_right = 155.0
+	panel.offset_top = -68.0
+	panel.offset_bottom = -8.0
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.035, 0.035, 0.04, 0.82)
+	panel_style.bg_color = Color(0.035, 0.035, 0.04, 0.88)
 	panel_style.border_color = Color(0.72, 0.62, 0.38, 0.9)
 	panel_style.set_border_width_all(1)
-	panel_style.set_corner_radius_all(6)
-	panel_style.content_margin_left = 4
-	panel_style.content_margin_top = 3
-	panel_style.content_margin_right = 4
-	panel_style.content_margin_bottom = 3
+	panel_style.set_corner_radius_all(8)
+	panel_style.content_margin_left = 6
+	panel_style.content_margin_top = 4
+	panel_style.content_margin_right = 6
+	panel_style.content_margin_bottom = 4
 	panel.add_theme_stylebox_override("panel", panel_style)
 	$CanvasLayer.add_child(panel)
 
 	weapons_row = HBoxContainer.new()
 	weapons_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	weapons_row.add_theme_constant_override("separation", 4)
+	weapons_row.add_theme_constant_override("separation", 6)
 	panel.add_child(weapons_row)
 
 func _refresh_weapons_hud() -> void:
@@ -263,22 +264,23 @@ func _refresh_weapons_hud() -> void:
 		if not weapon:
 			continue
 		var slot := Control.new()
-		slot.custom_minimum_size = Vector2(38, 38)
+		slot.custom_minimum_size = Vector2(50, 50)
 		slot.tooltip_text = weapon_info["name"]
 		weapons_row.add_child(slot)
 
 		var button := Button.new()
 		button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		button.add_theme_constant_override("icon_max_width", 26)
+		button.add_theme_constant_override("icon_max_width", 34)
 		button.icon = load(weapon_info["icon"]) as Texture2D
 		button.expand_icon = true
+		button.focus_mode = Control.FOCUS_NONE
 		button.tooltip_text = "%s — chọn, nhấn Đánh/J để dùng; nhấn lại để bỏ chọn" % weapon_info["name"]
 		button.pressed.connect(_on_weapon_button_pressed.bind(weapon_info["id"]))
 		slot.add_child(button)
 
 		var cooldown_overlay := ColorRect.new()
 		cooldown_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		cooldown_overlay.color = Color(0.02, 0.02, 0.025, 0.68)
+		cooldown_overlay.color = Color(0.02, 0.02, 0.025, 0.72)
 		cooldown_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		cooldown_overlay.visible = false
 		button.add_child(cooldown_overlay)
@@ -287,7 +289,7 @@ func _refresh_weapons_hud() -> void:
 		cooldown_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		cooldown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		cooldown_label.add_theme_font_size_override("font_size", 15)
+		cooldown_label.add_theme_font_size_override("font_size", 16)
 		cooldown_label.add_theme_color_override("font_color", Color.WHITE)
 		cooldown_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		cooldown_label.visible = false
@@ -296,12 +298,12 @@ func _refresh_weapons_hud() -> void:
 		var selected_mark := Label.new()
 		selected_mark.anchor_left = 1.0
 		selected_mark.anchor_right = 1.0
-		selected_mark.offset_left = -13.0
-		selected_mark.offset_right = -1.0
-		selected_mark.offset_top = 0.0
-		selected_mark.offset_bottom = 12.0
+		selected_mark.offset_left = -16.0
+		selected_mark.offset_right = -2.0
+		selected_mark.offset_top = 1.0
+		selected_mark.offset_bottom = 15.0
 		selected_mark.text = "✓"
-		selected_mark.add_theme_font_size_override("font_size", 10)
+		selected_mark.add_theme_font_size_override("font_size", 12)
 		selected_mark.add_theme_color_override("font_color", Color(1.0, 0.88, 0.25))
 		selected_mark.add_theme_color_override("font_shadow_color", Color.BLACK)
 		selected_mark.add_theme_constant_override("shadow_offset_x", 1)
@@ -314,10 +316,10 @@ func _refresh_weapons_hud() -> void:
 		level_label.anchor_right = 1.0
 		level_label.anchor_top = 1.0
 		level_label.anchor_bottom = 1.0
-		level_label.offset_top = -12.0
+		level_label.offset_top = -14.0
 		level_label.offset_bottom = -1.0
 		level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		level_label.add_theme_font_size_override("font_size", 8)
+		level_label.add_theme_font_size_override("font_size", 9)
 		level_label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.75))
 		level_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 		level_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -337,11 +339,23 @@ func _refresh_weapons_hud() -> void:
 	_set_weapon_selection(str(player.get("selected_weapon_id")))
 
 func _on_weapon_button_pressed(weapon_id: String) -> void:
-	var slot: Dictionary = weapon_slots.get(weapon_id, {})
+	if not is_instance_valid(player) or not player.has_method("select_weapon"):
+		return
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - last_weapon_switch_time < 0.25:
+		return
+	last_weapon_switch_time = now
+
+	var current_selected: String = str(player.get("selected_weapon_id"))
+	var target_weapon: String = weapon_id
+	# Nếu bấm lại vào chính vũ khí phụ đang chọn -> Hủy chọn, quay về Bã Mía (Sugarcane)
+	if current_selected == weapon_id and weapon_id != "Sugarcane":
+		target_weapon = "Sugarcane"
+	var slot: Dictionary = weapon_slots.get(target_weapon, {})
 	var weapon: Node = slot.get("weapon")
-	if is_instance_valid(weapon) and player.has_method("select_weapon"):
-		player.call("select_weapon", weapon_id)
-		_set_weapon_selection(weapon_id)
+	if is_instance_valid(weapon):
+		player.call("select_weapon", target_weapon)
+		_set_weapon_selection(target_weapon)
 
 func _set_weapon_selection(selected_weapon_id: String) -> void:
 	for id in weapon_slots:
@@ -354,10 +368,11 @@ func _set_weapon_selection(selected_weapon_id: String) -> void:
 		style.bg_color = Color(0.28, 0.22, 0.08, 0.96) if selected else Color(0.08, 0.08, 0.09, 0.88)
 		style.border_color = Color(1.0, 0.82, 0.18, 1.0) if selected else Color(0.62, 0.62, 0.62, 0.8)
 		style.set_border_width_all(2 if selected else 1)
-		style.set_corner_radius_all(4)
+		style.set_corner_radius_all(6)
 		button.add_theme_stylebox_override("normal", style)
 		button.add_theme_stylebox_override("hover", style)
 		button.add_theme_stylebox_override("pressed", style)
+		button.add_theme_stylebox_override("focus", style)
 	_update_weapon_cooldowns()
 
 func _update_weapon_cooldowns() -> void:

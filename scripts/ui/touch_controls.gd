@@ -116,8 +116,10 @@ func _input(event: InputEvent) -> void:
 	# Virtual Joystick Touch/Mouse Input
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			# Check if touch is on left half of screen
-			if event.position.x < get_viewport().get_visible_rect().size.x * 0.5:
+			var vp_size: Vector2 = get_viewport().get_visible_rect().size
+			var is_on_weapon_hud: bool = event.position.y > (vp_size.y - 85.0) and absf(event.position.x - vp_size.x * 0.5) < 180.0
+			# Check if touch is on left half of screen and not on bottom weapon HUD
+			if event.position.x < vp_size.x * 0.5 and not is_on_weapon_hud:
 				if touch_pointer_id == -1:
 					touch_pointer_id = event.index
 					if is_dynamic_joystick:
@@ -137,8 +139,10 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
+				var vp_size: Vector2 = get_viewport().get_visible_rect().size
 				var local_pos = event.position
-				if local_pos.x < 400 and local_pos.y > get_viewport().get_visible_rect().size.y - 400:
+				var is_on_weapon_hud: bool = local_pos.y > (vp_size.y - 85.0) and absf(local_pos.x - vp_size.x * 0.5) < 180.0
+				if local_pos.x < 400 and local_pos.y > vp_size.y - 400 and not is_on_weapon_hud:
 					touch_pointer_id = 999
 					_update_joystick(event.position)
 			else:

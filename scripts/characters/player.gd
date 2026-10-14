@@ -151,11 +151,6 @@ func perform_active_attack() -> void:
 		if selected_weapon and selected_weapon.has_method("activate"):
 			selected_weapon.call("activate")
 			return
-		select_weapon("Sugarcane")
-		var default_weapon := weapons.get_node_or_null(selected_weapon_id)
-		if default_weapon and default_weapon.has_method("activate"):
-			default_weapon.call("activate")
-			return
 
 	if attack_cooldown_timer > 0.0:
 		return

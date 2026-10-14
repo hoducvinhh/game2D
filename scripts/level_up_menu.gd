@@ -63,6 +63,7 @@ const EVOLUTION_REQUIREMENTS := {
 }
 
 var current_options: Array = []
+var can_select: bool = true
 
 func _ready() -> void:
 	hide()
@@ -70,6 +71,7 @@ func _ready() -> void:
 	
 	for i in range(buttons.size()):
 		var btn = buttons[i]
+		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_btn_pressed.bind(i))
 		
 		# 1. Xóa sạch icon mặc định và chữ mặc định của Button để tránh bị vẽ đè ảnh to
@@ -218,10 +220,17 @@ func show_options(_level: int = 1) -> void:
 		else:
 			btn.visible = false
 			
+	can_select = false
 	show()
 	get_tree().paused = true
+	# Chờ 0.25 giây bỏ qua các chạm vô tình đang diễn ra lúc vừa mở menu
+	get_tree().create_timer(0.25, true, false, true).timeout.connect(func() -> void:
+		can_select = true
+	)
 
 func _on_btn_pressed(index: int) -> void:
+	if not can_select:
+		return
 	if index < current_options.size():
 		var chosen_data = current_options[index]
 		hide()

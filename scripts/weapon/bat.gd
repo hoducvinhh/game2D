@@ -22,8 +22,9 @@ const UPGRADE_DESCRIPTIONS = {
 }
 
 func _ready() -> void:
-	# Tắt va chạm lúc đầu, chỉ bật khi vung trúng đòn
+	# Tắt va chạm và ẩn chày lúc đầu, chỉ hiện khi chọn Chày hoặc khi vung đòn
 	collision_shape.disabled = true
+	visible = false
 	
 	# Tìm nhân vật trong nhóm "player"
 	await get_tree().process_frame
@@ -33,6 +34,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	cooldown_remaining = maxf(0.0, cooldown_remaining - delta)
 	if player:
+		# Chỉ hiện chày khi người chơi đang chọn Chày HOẶC đang trong animation vung chày!
+		var is_selected: bool = (str(player.get("selected_weapon_id")) == "Chay")
+		var is_swinging: bool = animation_player and animation_player.is_playing() and animation_player.current_animation == "swing"
+		visible = is_selected or is_swinging
+
 		# 1. Bám theo vị trí của nhân vật
 		global_position = player.global_position
 		
@@ -40,7 +46,7 @@ func _process(delta: float) -> void:
 		if "last_direction" in player and player.last_direction != 0:
 			var dir = sign(player.last_direction)
 			scale.x = abs(scale.x) * dir
-			position.x = 15 * dir # Thay đổi số 15 nếu muốn khoảng cách xa/gần tay hơn
+			position.x = 15 * dir
 		elif "velocity" in player and player.velocity.x != 0:
 			var dir = sign(player.velocity.x)
 			scale.x = abs(scale.x) * dir
@@ -49,14 +55,15 @@ func _process(delta: float) -> void:
 func _on_attack_cooldown() -> void:
 	if animation_player:
 		animation_player.play("swing")
-	if not get_tree().get_nodes_in_group("enemies").is_empty() and player and player.has_method("play_attack_animation"):
+	if player and player.has_method("play_attack_animation"):
 		player.play_attack_animation()
 
 func activate() -> bool:
-	if cooldown_remaining > 0.0 or get_tree().get_nodes_in_group("enemies").is_empty():
+	if cooldown_remaining > 0.0:
 		return false
 	cooldown_remaining = attack_interval
 	collision_shape.disabled = true
+	visible = true
 	_on_attack_cooldown()
 	get_tree().create_timer(0.36).timeout.connect(_disable_hitbox_after_swing)
 	return true
@@ -64,6 +71,8 @@ func activate() -> bool:
 func _disable_hitbox_after_swing() -> void:
 	if is_instance_valid(self):
 		disable_hitbox()
+		if animation_player and animation_player.has_animation("RESET"):
+			animation_player.play("RESET")
 
 # Các hàm gọi trực tiếp từ AnimationPlayer bằng "Call Method Track"
 func enable_hitbox() -> void:

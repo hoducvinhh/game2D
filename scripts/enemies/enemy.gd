@@ -216,6 +216,11 @@ func die() -> void:
 	if touch and touch.has_method("add_rage"):
 		touch.add_rage(2.5)
 
+	# Tự động cộng 10 EXP trực tiếp cho Player khi tiêu diệt quái
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("add_exp"):
+		player.add_exp(10)
+
 	# Tỉ lệ rơi vật phẩm sàn đặc biệt (Máu, Nam châm, Bom)
 	var drop_roll = randf()
 	if drop_roll < 0.04 and ResourceLoader.exists("res://scenes/objects/meat_heal.tscn"):
